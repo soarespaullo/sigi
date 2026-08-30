@@ -224,6 +224,83 @@ body {
 }
 
 /* ==========================================================================
+   Dashboard & Settings Cards (SiGI SaaS Standard)
+   ========================================================================== */
+.dashboard-card {
+  border: 1px solid var(--sigi-border);
+  box-shadow: var(--sigi-shadow-sm);
+  border-radius: var(--sigi-radius-xl);
+  background: var(--sigi-surface);
+  transition: var(--sigi-transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sigi-shadow-lg);
+  border-color: #cbd5e1;
+}
+
+.dashboard-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  transition: var(--sigi-transition-fast);
+}
+
+.dashboard-card.card-primary::before {
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+}
+
+.dashboard-card.card-success::before {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.dashboard-card.card-warning::before {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.dashboard-card.card-danger::before {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.dashboard-card.card-info::before {
+  background: linear-gradient(90deg, #0ea5e9, #0284c7);
+}
+
+.dashboard-card.card-indigo::before {
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+}
+
+.dashboard-card.card-secondary::before {
+  background: linear-gradient(90deg, #64748b, #475569);
+}
+
+/* Icon badges */
+.dashboard-icon {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.85rem;
+  transition: var(--sigi-transition-fast);
+  flex-shrink: 0;
+}
+
+.dashboard-card:hover .dashboard-icon {
+  transform: scale(1.08);
+}
+
+/* ==========================================================================
    Buttons & Interactive Elements
    ========================================================================== */
 .btn {

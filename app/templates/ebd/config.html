@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Configurações da EBD — SiGI{% endblock %}
+{% block nav_configuracoes_active %}active{% endblock %}
 {% block nav_ebd_active %}active{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-5">
 
+  <!-- Header -->
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 pb-2 border-bottom">
     <div>
       <h2 class="fw-bold mb-1">
@@ -22,26 +24,53 @@
     </div>
   </div>
 
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-xl-7">
-      <div class="card shadow-sm border-0">
-        <div class="card-header fw-bold bg-white">
-          <i class="bi bi-gear-fill text-primary me-1"></i> Dados da Escola Dominical
-        </div>
-        <div class="card-body p-4">
-          <form method="post">
-            {{ form.hidden_tag() }}
+  <form method="post" autocomplete="off">
+    {{ form.hidden_tag() }}
 
-            <div class="mb-3">
-              {{ form.nome.label(class="form-label") }}
-              {{ form.nome(class="form-control", placeholder="Ex: Escola Bíblica Dominical Sede") }}
+    <!-- Context / Info Banner (Padrão SiGI) -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body p-4">
+        <div class="row align-items-center">
+          <div class="col-md-7 col-lg-8">
+            <div class="d-flex align-items-center gap-3">
+              <div class="dashboard-icon bg-primary bg-opacity-10 text-primary mb-0">
+                <i class="bi bi-book-half fs-3"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold text-dark mb-1">Parâmetros Operacionais da EBD</h5>
+                <p class="text-muted small mb-0">Personalize o nome institucional, diretrizes de ensino, horários padrão e o responsável pela superintendência.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5 col-lg-4 text-md-end mt-3 mt-md-0">
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 {% if form.ativo.data %}bg-success bg-opacity-10 text-success{% else %}bg-secondary bg-opacity-10 text-muted{% endif %}">
+              <i class="bi {% if form.ativo.data %}bi-check-circle-fill text-success{% else %}bi-dash-circle text-secondary{% endif %}"></i>
+              <span class="fw-semibold small">Módulo EBD: {% if form.ativo.data %}Ativo & Visível{% else %}Em Manutenção / Inativo{% endif %}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid de Seções Modulares -->
+    <div class="row g-4 mb-4">
+      <!-- Coluna Principal: Identificação & Diretrizes -->
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header fw-bold text-primary">
+            <i class="bi bi-info-circle text-primary me-1"></i> Identificação & Diretrizes Institucionais
+          </div>
+          <div class="card-body p-4">
+            <div class="mb-4">
+              {{ form.nome.label(class="form-label fw-bold") }}
+              {{ form.nome(class="form-control form-control-lg", placeholder="Ex: Escola Bíblica Dominical — Sede Central") }}
               {% if form.nome.errors %}
-                <div class="text-danger small">{{ form.nome.errors[0] }}</div>
+                <div class="text-danger small mt-1">{{ form.nome.errors[0] }}</div>
               {% endif %}
             </div>
 
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Descrição Institucional</label>
+            <div class="mb-2">
+              <label class="form-label fw-bold">Descrição & Apresentação Institucional</label>
               <input type="hidden" name="descricao" id="descricao_input" value="{{ form.descricao.data or '' }}">
               <div class="sigi-editor-wrapper" id="descricaoEditorWrapper">
                 <div id="descricaoEditorContainer">{{ (form.descricao.data or '') | safe }}</div>
@@ -50,48 +79,107 @@
                   <span id="descricaoWordCount">0 palavras</span>
                 </div>
               </div>
-              <div class="form-text small text-muted mt-1">
-                <i class="bi bi-info-circle me-1"></i> Apresentação geral, objetivos e diretrizes da Escola Bíblica Dominical.
+              <div class="form-text small text-muted mt-2">
+                <i class="bi bi-info-circle me-1"></i> Apresentação geral, objetivos pedagógicos e diretrizes da Escola Bíblica Dominical.
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <div class="row g-3 mb-3">
-              <div class="col-md-4">
-                {{ form.dia_semana.label(class="form-label") }}
+      <!-- Coluna Lateral: Funcionamento, Horários & Superintendência -->
+      <div class="col-lg-4">
+        <div class="d-flex flex-column gap-4 h-100">
+
+          <!-- Card Horários -->
+          <div class="card shadow-sm border-0">
+            <div class="card-header fw-bold text-primary">
+              <i class="bi bi-clock-history text-primary me-1"></i> Dias & Horários de Aulas
+            </div>
+            <div class="card-body p-4">
+              <div class="mb-3">
+                {{ form.dia_semana.label(class="form-label fw-semibold") }}
                 {{ form.dia_semana(class="form-select") }}
+                {% if form.dia_semana.errors %}
+                  <div class="text-danger small mt-1">{{ form.dia_semana.errors[0] }}</div>
+                {% endif %}
               </div>
-              <div class="col-md-4">
-                {{ form.horario_inicio.label(class="form-label") }}
-                {{ form.horario_inicio(class="form-control", placeholder="09:00") }}
+
+              <div class="row g-2">
+                <div class="col-6">
+                  {{ form.horario_inicio.label(class="form-label fw-semibold small") }}
+                  {{ form.horario_inicio(class="form-control", placeholder="09:00") }}
+                  {% if form.horario_inicio.errors %}
+                    <div class="text-danger small mt-1">{{ form.horario_inicio.errors[0] }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-6">
+                  {{ form.horario_termino.label(class="form-label fw-semibold small") }}
+                  {{ form.horario_termino(class="form-control", placeholder="10:30") }}
+                  {% if form.horario_termino.errors %}
+                    <div class="text-danger small mt-1">{{ form.horario_termino.errors[0] }}</div>
+                  {% endif %}
+                </div>
               </div>
-              <div class="col-md-4">
-                {{ form.horario_termino.label(class="form-label") }}
-                {{ form.horario_termino(class="form-control", placeholder="10:30") }}
+              <div class="form-text small text-muted mt-2">
+                <i class="bi bi-calendar-event me-1"></i> Horário sugerido na criação de novas aulas e chamadas.
               </div>
             </div>
+          </div>
 
-            <div class="mb-3">
-              {{ form.coordenador_id.label(class="form-label") }}
-              {{ form.coordenador_id(class="form-select") }}
-              <div class="form-text">Membro responsável pela superintendência geral da EBD.</div>
+          <!-- Card Superintendência & Status -->
+          <div class="card shadow-sm border-0 flex-grow-1">
+            <div class="card-header fw-bold text-primary">
+              <i class="bi bi-person-badge text-primary me-1"></i> Superintendência & Status
             </div>
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+              <div>
+                <div class="mb-4">
+                  {{ form.coordenador_id.label(class="form-label fw-semibold") }}
+                  {{ form.coordenador_id(class="form-select") }}
+                  <div class="form-text small text-muted mt-1">
+                    Membro responsável pela coordenação geral da EBD.
+                  </div>
+                  {% if form.coordenador_id.errors %}
+                    <div class="text-danger small mt-1">{{ form.coordenador_id.errors[0] }}</div>
+                  {% endif %}
+                </div>
 
-            <div class="form-check form-switch mb-4">
-              {{ form.ativo(class="form-check-input") }}
-              {{ form.ativo.label(class="form-check-label") }}
+                <div class="p-3 bg-light rounded-3 border">
+                  <div class="form-check form-switch mb-0">
+                    {{ form.ativo(class="form-check-input", id="switchAtivo") }}
+                    <label class="form-check-label fw-semibold ms-1" for="switchAtivo">
+                      EBD Ativa no Sistema
+                    </label>
+                  </div>
+                  <div class="small text-muted mt-1">
+                    Permite o acesso de professores, lançamentos e relatórios.
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div class="d-flex justify-content-end gap-2">
-              <a href="{{ url_for('configuracoes.configuracoes') }}" class="btn btn-outline-secondary">Cancelar</a>
-              <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle me-1"></i> Salvar Configurações
-              </button>
-            </div>
-          </form>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Barra de Ações Inferior (padrão SiGI) -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-3 pb-4 border-top">
+      <div class="text-muted small">
+        <i class="bi bi-shield-check text-success me-1"></i> As alterações entram em vigor imediatamente após salvar.
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('configuracoes.configuracoes') }}" class="btn btn-outline-secondary px-4">
+          Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary px-4">
+          <i class="bi bi-check-circle me-1"></i> Salvar Configurações
+        </button>
+      </div>
+    </div>
+
+  </form>
 
 </div>
 {% endblock %}
@@ -110,3 +198,4 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock %}
+
