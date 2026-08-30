@@ -57,6 +57,7 @@ class DashboardService:
             Member.query
             .filter(Member.data_nascimento.isnot(None))
             .filter(Member.data_saida.is_(None))
+            .filter((Member.status.is_(None)) | (Member.status == "Ativo"))
             .all()
         )
 
@@ -75,10 +76,13 @@ class DashboardService:
         ano_atual = agora.year
         mes_nome = cls.MESES_PT.get(mes_atual, "Mês Atual")
 
-        # 1. Contagens gerais
-        total_membros = Member.query.filter(Member.data_saida.is_(None)).count()
-        total_batizados = Member.query.filter_by(batizado=True).count() if is_admin else 0
-        total_dizimistas = Member.query.filter_by(dizimista=True).count() if is_admin else 0
+        # 1. Contagens gerais (apenas membros ativos da congregação são total_membros)
+        total_membros = Member.query.filter(Member.data_saida.is_(None), (Member.status.is_(None)) | (Member.status == "Ativo")).count()
+        total_transferidos = Member.query.filter(Member.status == "Transferido").count()
+        total_inativos = Member.query.filter((Member.status == "Inativo") | (Member.data_saida.isnot(None))).filter(Member.status != "Transferido").count()
+        total_geral_membros = Member.query.count()
+        total_batizados = Member.query.filter_by(batizado=True).filter(Member.data_saida.is_(None), (Member.status.is_(None)) | (Member.status == "Ativo")).count() if is_admin else 0
+        total_dizimistas = Member.query.filter_by(dizimista=True).filter(Member.data_saida.is_(None), (Member.status.is_(None)) | (Member.status == "Ativo")).count() if is_admin else 0
         total_eventos = Evento.query.count()
         total_visitantes = Member.query.filter_by(visitante=True).count()
 
@@ -89,6 +93,9 @@ class DashboardService:
         if not is_admin:
             return {
                 "total_membros": total_membros,
+                "total_transferidos": total_transferidos,
+                "total_inativos": total_inativos,
+                "total_geral_membros": total_geral_membros,
                 "total_batizados": 0,
                 "total_dizimistas": 0,
                 "total_eventos": total_eventos,
@@ -237,6 +244,7 @@ class DashboardService:
                 db.session.query(func.count(Member.id))
                 .filter(func.extract('year', Member.data_cadastro) <= ano)
                 .filter((Member.data_saida.is_(None)) | (func.extract('year', Member.data_saida) > ano))
+                .filter((Member.status.is_(None)) | (Member.status == "Ativo"))
                 .scalar()
             ) or 0
 
@@ -259,6 +267,9 @@ class DashboardService:
 
         return {
             "total_membros": total_membros,
+            "total_transferidos": total_transferidos,
+            "total_inativos": total_inativos,
+            "total_geral_membros": total_geral_membros,
             "total_batizados": total_batizados,
             "total_dizimistas": total_dizimistas,
             "total_eventos": total_eventos,

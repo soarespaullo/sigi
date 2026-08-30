@@ -36,8 +36,19 @@ member_bp = Blueprint('member', __name__, url_prefix="/membros")
 def listar_membros():
     page = request.args.get("page", 1, type=int)
     termo = request.args.get("q", "").strip()
+    status_filtro = request.args.get("status", "Ativo")
 
     query = Member.query
+
+    # Filtro por status (padrão: Ativo)
+    if status_filtro == "Ativo":
+        query = query.filter((Member.status.is_(None)) | (Member.status == "Ativo")).filter(Member.data_saida.is_(None))
+    elif status_filtro == "Transferido":
+        query = query.filter(Member.status == "Transferido")
+    elif status_filtro == "Inativo":
+        query = query.filter((Member.status == "Inativo") | (Member.data_saida.isnot(None)))
+    # Se for "Todos" ou vazio, não aplica filtro de status
+
     if termo:
         query = query.filter(
             (Member.nome.ilike(f"%{termo}%")) |
@@ -45,7 +56,7 @@ def listar_membros():
             (Member.funcao.ilike(f"%{termo}%"))
         )
 
-    membros = query.order_by(Member.nome.asc()).paginate(page=page, per_page=10)
+    membros = query.order_by(Member.nome.asc()).paginate(page=page, per_page=10, error_out=False)
 
     # Busca o último link de visitante ativo
     visitante_link = PublicLink.query.filter_by(tipo="visitante", ativo=True).order_by(PublicLink.data_criacao.desc()).first()
@@ -61,7 +72,8 @@ def listar_membros():
         "membros/listar_membros.html",
         membros=membros,
         visitante_link_url=visitante_link_url,
-        termo=termo
+        termo=termo,
+        status_filtro=status_filtro
     )
 
 
@@ -72,10 +84,20 @@ def listar_membros():
 @login_required   # 👈 protege a rota
 @permission_required("membros", "view")
 def buscar_membros():
-    termo = request.args.get("q", "").strip().lower()
+    termo = request.args.get("q", "").strip()
+    status_filtro = request.args.get("status", "Ativo")
     page = request.args.get("page", 1, type=int)
 
     query = Member.query
+
+    # Filtro por status
+    if status_filtro == "Ativo":
+        query = query.filter((Member.status.is_(None)) | (Member.status == "Ativo")).filter(Member.data_saida.is_(None))
+    elif status_filtro == "Transferido":
+        query = query.filter(Member.status == "Transferido")
+    elif status_filtro == "Inativo":
+        query = query.filter((Member.status == "Inativo") | (Member.data_saida.isnot(None)))
+
     if termo:
         query = query.filter(
             (Member.nome.ilike(f"%{termo}%")) |
@@ -86,6 +108,10 @@ def buscar_membros():
     query = query.order_by(Member.nome.asc())
     membros = query.paginate(page=page, per_page=10)
 
+    # Busca o último link de visitante ativo
+    visitante_link = PublicLink.query.filter_by(tipo="visitante", ativo=True).order_by(PublicLink.data_criacao.desc()).first()
+    visitante_link_url = url_for("member.cadastro_visitante", hash=visitante_link.hash, _external=True) if visitante_link else ""
+
     if termo:
         if membros.total == 0:
             flash("Nenhum membro corresponde ao termo pesquisado", "warning")
@@ -94,7 +120,13 @@ def buscar_membros():
         else:
             flash(f"{membros.total} membro(s) encontrado(s)", "info")
 
-    return render_template("membros/listar_membros.html", membros=membros, termo=termo)
+    return render_template(
+        "membros/listar_membros.html",
+        membros=membros,
+        visitante_link_url=visitante_link_url,
+        termo=termo,
+        status_filtro=status_filtro
+    )
     
 
 # -----------------------------
@@ -104,7 +136,7 @@ def buscar_membros():
 @login_required
 @permission_required("membros", "create")
 def cadastro_membro():
-    form = MemberForm(CombinedMultiDict([request.form, request.files]))
+    form = MemberForm()
     if request.method == "POST" and form.validate_on_submit():
         existente = None
         if form.cpf.data:
@@ -187,7 +219,7 @@ def cadastro_membro():
 @permission_required("membros", "edit")
 def editar_membro(id):
     membro = Member.query.get_or_404(id)
-    form = MemberForm(CombinedMultiDict([request.form, request.files]), obj=membro)
+    form = MemberForm(obj=membro)
 
     if request.method == "GET":
         form.batizado.data = membro.batizado
@@ -293,9 +325,14 @@ def aniversariantes_mes():
     if not mes:
         mes = datetime.now().month
 
-    # Query base
-    query = Member.query.filter(Member.data_nascimento.isnot(None))
-    query = query.filter(func.extract('month', Member.data_nascimento) == mes)
+    # Query base (apenas membros ativos da congregação)
+    query = (
+        Member.query
+        .filter(Member.data_nascimento.isnot(None))
+        .filter(Member.data_saida.is_(None))
+        .filter((Member.status.is_(None)) | (Member.status == "Ativo"))
+        .filter(func.extract('month', Member.data_nascimento) == mes)
+    )
 
     if funcao:
         query = query.filter(Member.funcao == funcao)
@@ -616,9 +653,14 @@ def exportar_aniversariantes_pdf():
     if not mes:
         mes = datetime.now().month
 
-    # 🔹 Filtros diretos
-    query = Member.query.filter(Member.data_nascimento.isnot(None))
-    query = query.filter(func.extract('month', Member.data_nascimento) == mes)
+    # 🔹 Filtros diretos (apenas membros ativos da congregação)
+    query = (
+        Member.query
+        .filter(Member.data_nascimento.isnot(None))
+        .filter(Member.data_saida.is_(None))
+        .filter((Member.status.is_(None)) | (Member.status == "Ativo"))
+        .filter(func.extract('month', Member.data_nascimento) == mes)
+    )
 
     if funcao:
         query = query.filter(Member.funcao == funcao)

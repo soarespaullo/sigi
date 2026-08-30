@@ -7,7 +7,7 @@
       <!-- Botão Anterior -->
       <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
         <a class="page-link"
-           href="{% if pagination.has_prev %}{{ url_for(request.endpoint, page=pagination.prev_num, q=termo) }}{% else %}#{% endif %}">
+           href="{% if pagination.has_prev %}{{ url_for(request.endpoint, page=pagination.prev_num, q=termo, status=status_filtro or request.args.get('status')) }}{% else %}#{% endif %}">
           Anterior
         </a>
       </li>
@@ -15,7 +15,7 @@
       <!-- Primeira página -->
       {% if pagination.page > 3 %}
         <li class="page-item">
-          <a class="page-link" href="{{ url_for(request.endpoint, page=1, q=termo) }}">1</a>
+          <a class="page-link" href="{{ url_for(request.endpoint, page=1, q=termo, status=status_filtro or request.args.get('status')) }}">1</a>
         </li>
         <li class="page-item disabled"><span class="page-link">…</span></li>
       {% endif %}
@@ -24,7 +24,7 @@
       {% for p in range(pagination.page-2, pagination.page+3) %}
         {% if p > 0 and p <= pagination.pages %}
           <li class="page-item {% if p == pagination.page %}active{% endif %}">
-            <a class="page-link" href="{{ url_for(request.endpoint, page=p, q=termo) }}">{{ p }}</a>
+            <a class="page-link" href="{{ url_for(request.endpoint, page=p, q=termo, status=status_filtro or request.args.get('status')) }}">{{ p }}</a>
           </li>
         {% endif %}
       {% endfor %}
@@ -33,14 +33,14 @@
       {% if pagination.page < pagination.pages - 2 %}
         <li class="page-item disabled"><span class="page-link">…</span></li>
         <li class="page-item">
-          <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.pages, q=termo) }}">{{ pagination.pages }}</a>
+          <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.pages, q=termo, status=status_filtro or request.args.get('status')) }}">{{ pagination.pages }}</a>
         </li>
       {% endif %}
 
       <!-- Botão Próximo -->
       <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
         <a class="page-link"
-           href="{% if pagination.has_next %}{{ url_for(request.endpoint, page=pagination.next_num, q=termo) }}{% else %}#{% endif %}">
+           href="{% if pagination.has_next %}{{ url_for(request.endpoint, page=pagination.next_num, q=termo, status=status_filtro or request.args.get('status')) }}{% else %}#{% endif %}">
           Próximo
         </a>
       </li>

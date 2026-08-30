@@ -138,6 +138,13 @@ def create_app(config_class=None):
     # -----------------------------
     # ⚠️ Handlers globais de erro
     # -----------------------------
+    from flask_wtf.csrf import CSRFError
+
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        flash("Sua sessão expirou ou o formulário ficou aberto por muito tempo. Por favor, tente novamente.", "warning")
+        return redirect(request.referrer or url_for("dashboard.dashboard"))
+
     @app.errorhandler(404)
     def page_not_found(e):
         return render_template("errors/404.html"), 404
@@ -158,6 +165,5 @@ def create_app(config_class=None):
         max_mb = int(max_bytes / (1024 * 1024))
         flash(f"Arquivo muito grande. O limite é {max_mb} MB.", "danger")
         return redirect(request.referrer or url_for("dashboard.dashboard"))
-
 
     return app

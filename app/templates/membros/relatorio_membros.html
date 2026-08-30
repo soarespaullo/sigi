@@ -46,6 +46,7 @@
             <option value="">Todas</option>
             <option value="Ativo" {% if request.args.get('status') == 'Ativo' %}selected{% endif %}>Ativo</option>
             <option value="Inativo" {% if request.args.get('status') == 'Inativo' %}selected{% endif %}>Inativo</option>
+            <option value="Transferido" {% if request.args.get('status') == 'Transferido' %}selected{% endif %}>Transferido</option>
           </select>
         </div>
         <div class="col-md-3">

@@ -66,8 +66,8 @@ class Member(db.Model):
 
     @property
     def ativo(self):
-        """Retorna False se tiver data de saída, True caso contrário."""
-        return self.data_saida is None
+        """Retorna True se o membro estiver ativo (sem data de saída e com status 'Ativo' ou padrão), False caso contrário."""
+        return self.data_saida is None and (self.status is None or self.status == "Ativo")
 
     def __repr__(self):
         return f"<Member {self.nome}>"

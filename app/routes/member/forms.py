@@ -52,7 +52,11 @@ class MemberForm(FlaskForm):
         ("Visitante", "Visitante")   # ✅ nova opção adicionada
     ], validators=[Optional()])
 
-    status = SelectField("Status", choices=[("Ativo", "Ativo"), ("Inativo", "Inativo")], validators=[Optional()])
+    status = SelectField("Status", choices=[
+        ("Ativo", "Ativo"),
+        ("Inativo", "Inativo"),
+        ("Transferido", "Transferido")
+    ], validators=[Optional()])
     # data_cadastro = DateField("Data de Cadastro", format="%Y-%m-%d", validators=[Optional()])
     # ✅ já vem preenchido com a data atual, mas pode ser alterado
     data_cadastro = DateField("Data de Cadastro", format="%Y-%m-%d", default=date.today, validators=[Optional()])
