@@ -94,7 +94,14 @@
               <!-- Membro Opcional -->
               <div class="col-md-4">
                 {{ form.membro_id.label(class="form-label") }}
-                {{ form.membro_id(class="form-select") }}
+                <input type="hidden" name="membro_id" id="membro_id" value="{{ form.membro_id.data or '' }}">
+                <input type="text" class="form-control" id="membro_busca" 
+                       placeholder="Buscar membro contribuinte..."
+                       data-sigi-autocomplete
+                       data-url="{{ url_for('api.buscar_membros') }}"
+                       data-hidden-input="#membro_id"
+                       data-mode="lookup"
+                       value="{% if form.membro_id.data %}{% for val, lbl in form.membro_id.choices if val == form.membro_id.data %}{{ lbl }}{% endfor %}{% endif %}">
               </div>
 
               <!-- Valor -->
@@ -144,8 +151,21 @@
 
               <!-- Observações -->
               <div class="col-12">
-                {{ form.observacoes.label(class="form-label") }}
-                {{ form.observacoes(class="form-control", rows="2", placeholder="Detalhes adicionais sobre o lançamento...") }}
+                <label class="form-label fw-semibold">Observações / Detalhes</label>
+                <input type="hidden" name="observacoes" id="observacoes_input" value="{{ form.observacoes.data or '' }}">
+                <div class="sigi-editor-wrapper" id="observacoesEditorWrapper">
+                  <div id="observacoesEditorContainer">{{ (form.observacoes.data or '') | safe }}</div>
+                  <div class="sigi-editor-footer">
+                    <span id="observacoesCharCount">0 caracteres</span>
+                    <span id="observacoesWordCount">0 palavras</span>
+                  </div>
+                </div>
+                <div class="form-text small text-muted mt-1">
+                  <i class="bi bi-info-circle me-1"></i> Detalhes adicionais, justificativas ou notas sobre a receita.
+                </div>
+                {% if form.observacoes.errors %}
+                  <div class="text-danger small mt-1">{{ form.observacoes.errors[0] }}</div>
+                {% endif %}
               </div>
             </div>
 
@@ -169,7 +189,15 @@
       <form method="GET" class="row g-2 align-items-end">
         <div class="col-md-3">
           <label class="form-label" for="filtro">Busca por Descrição / Conta</label>
-          <input type="text" name="filtro" id="filtro" class="form-control" placeholder="Buscar..." value="{{ filtro }}">
+          <div class="sigi-search-field">
+            <i class="bi bi-search sigi-search-icon"></i>
+            <input type="text" name="filtro" id="filtro" class="form-control sigi-search-input" 
+                   placeholder="Buscar descrição, conta ou membro..." value="{{ filtro }}"
+                   data-sigi-autocomplete
+                   data-url="{{ url_for('api.buscar_entradas') }}"
+                   data-mode="search"
+                   data-min-chars="2">
+          </div>
         </div>
         <div class="col-md-3">
           <label class="form-label" for="categoria">Categoria de Entrada</label>
@@ -329,4 +357,19 @@
       </div>
     {% endif %}
   {% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  initSigiEditor({
+    editorId: 'observacoesEditorContainer',
+    inputId: 'observacoes_input',
+    charCountId: 'observacoesCharCount',
+    wordCountId: 'observacoesWordCount',
+    placeholder: 'Detalhes adicionais, histórico ou notas sobre a receita...',
+    minHeight: 140
+  });
+});
+</script>
 {% endblock %}

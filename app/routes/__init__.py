@@ -7,6 +7,7 @@ from .patrimonio import patrimonio_bp
 from .configuracoes import config_bp
 from .perfil.perfil import perfil_bp
 from .documentos import documentos_bp
+from .api import api_bp
 
 __all__ = [
     "auth_bp",
@@ -18,4 +19,5 @@ __all__ = [
     "config_bp",
     "perfil_bp",
     "documentos_bp",
+    "api_bp",
 ]

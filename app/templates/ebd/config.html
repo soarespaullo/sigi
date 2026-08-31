@@ -136,9 +136,16 @@
               <div>
                 <div class="mb-4">
                   {{ form.coordenador_id.label(class="form-label fw-semibold") }}
-                  {{ form.coordenador_id(class="form-select") }}
+                  <input type="hidden" name="coordenador_id" id="coordenador_id" value="{{ form.coordenador_id.data or '' }}">
+                  <input type="text" class="form-control" id="coordenador_busca" 
+                         placeholder="Buscar membro coordenador..."
+                         data-sigi-autocomplete
+                         data-url="{{ url_for('api.buscar_membros', status='Ativo') }}"
+                         data-hidden-input="#coordenador_id"
+                         data-mode="lookup"
+                         value="{% if form.coordenador_id.data %}{% for val, lbl in form.coordenador_id.choices if val == form.coordenador_id.data %}{{ lbl }}{% endfor %}{% endif %}">
                   <div class="form-text small text-muted mt-1">
-                    Membro responsável pela coordenação geral da EBD.
+                    <i class="bi bi-info-circle me-1"></i> Membro responsável pela coordenação geral da EBD.
                   </div>
                   {% if form.coordenador_id.errors %}
                     <div class="text-danger small mt-1">{{ form.coordenador_id.errors[0] }}</div>

@@ -144,8 +144,21 @@
 
               <!-- Observações -->
               <div class="col-12">
-                {{ form.observacoes.label(class="form-label") }}
-                {{ form.observacoes(class="form-control", rows="2", placeholder="Justificativa ou detalhes da despesa...") }}
+                <label class="form-label fw-semibold">Observações / Justificativa</label>
+                <input type="hidden" name="observacoes" id="observacoes_input" value="{{ form.observacoes.data or '' }}">
+                <div class="sigi-editor-wrapper" id="observacoesEditorWrapper">
+                  <div id="observacoesEditorContainer">{{ (form.observacoes.data or '') | safe }}</div>
+                  <div class="sigi-editor-footer">
+                    <span id="observacoesCharCount">0 caracteres</span>
+                    <span id="observacoesWordCount">0 palavras</span>
+                  </div>
+                </div>
+                <div class="form-text small text-muted mt-1">
+                  <i class="bi bi-info-circle me-1"></i> Justificativa, autorização, notas fiscais ou detalhes da despesa.
+                </div>
+                {% if form.observacoes.errors %}
+                  <div class="text-danger small mt-1">{{ form.observacoes.errors[0] }}</div>
+                {% endif %}
               </div>
             </div>
 
@@ -169,7 +182,15 @@
       <form method="GET" class="row g-2 align-items-end">
         <div class="col-md-3">
           <label class="form-label" for="filtro">Busca por Descrição / Favorecido</label>
-          <input type="text" name="filtro" id="filtro" class="form-control" placeholder="Buscar..." value="{{ filtro }}">
+          <div class="sigi-search-field">
+            <i class="bi bi-search sigi-search-icon"></i>
+            <input type="text" name="filtro" id="filtro" class="form-control sigi-search-input" 
+                   placeholder="Buscar descrição, departamento ou favorecido..." value="{{ filtro }}"
+                   data-sigi-autocomplete
+                   data-url="{{ url_for('api.buscar_saidas') }}"
+                   data-mode="search"
+                   data-min-chars="2">
+          </div>
         </div>
         <div class="col-md-3">
           <label class="form-label" for="departamento">Departamento / Ministério</label>
@@ -329,4 +350,19 @@
       </div>
     {% endif %}
   {% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  initSigiEditor({
+    editorId: 'observacoesEditorContainer',
+    inputId: 'observacoes_input',
+    charCountId: 'observacoesCharCount',
+    wordCountId: 'observacoesWordCount',
+    placeholder: 'Justificativa, detalhes ou notas sobre a despesa...',
+    minHeight: 140
+  });
+});
+</script>
 {% endblock %}

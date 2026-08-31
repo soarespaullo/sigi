@@ -795,3 +795,171 @@ footer a {
 footer a:hover {
   color: var(--sigi-primary);
 }
+
+/* ==========================================================================
+   Campo de Busca Padronizado (Lupa Interna & Autocomplete)
+   ========================================================================== */
+.sigi-search-field {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.sigi-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--sigi-text-muted);
+  font-size: 0.9rem;
+  pointer-events: none;
+  z-index: 5;
+  transition: color 0.15s ease;
+}
+
+.sigi-search-field:focus-within .sigi-search-icon {
+  color: var(--sigi-primary);
+}
+
+.sigi-search-input,
+.sigi-search-field .form-control {
+  padding-left: 2.25rem !important;
+  border-radius: var(--sigi-radius-md);
+}
+
+.sigi-search-field .sigi-autocomplete-wrapper {
+  width: 100%;
+}
+
+.sigi-avatar-wrapper {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Autocomplete & Real-time Suggestions (SaaS UI)
+   ========================================================================== */
+.sigi-autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-group > .sigi-autocomplete-wrapper,
+.sigi-autocomplete-wrapper.sigi-in-input-group {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+}
+
+.input-group > .sigi-autocomplete-wrapper > .form-control {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.sigi-autocomplete-wrapper.has-selection .sigi-autocomplete-input {
+  padding-right: 2.25rem;
+}
+
+.sigi-autocomplete-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--sigi-text-muted);
+  transition: var(--sigi-transition-fast);
+}
+
+.sigi-autocomplete-clear:hover {
+  color: var(--sigi-danger);
+}
+
+.sigi-autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  width: 100%;
+  z-index: 1060;
+  background: var(--sigi-surface);
+  border: 1px solid var(--sigi-border);
+  border-radius: var(--sigi-radius-md);
+  box-shadow: var(--sigi-shadow-xl);
+  max-height: 340px;
+  overflow-y: auto;
+  animation: sigiDropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes sigiDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sigi-autocomplete-list {
+  padding: 0.35rem 0;
+}
+
+.sigi-autocomplete-item {
+  cursor: pointer;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.sigi-autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.sigi-autocomplete-item:hover,
+.sigi-autocomplete-item.active {
+  background-color: var(--sigi-primary-light);
+}
+
+.sigi-autocomplete-item.active .fw-semibold {
+  color: var(--sigi-primary) !important;
+}
+
+.sigi-autocomplete-state {
+  padding: 1rem;
+  color: var(--sigi-text-muted);
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   📍 SiGI — Componente Universal de CEP (ViaCEP)
+   ========================================================================== */
+.sigi-cep-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.sigi-cep-wrapper input {
+  padding-right: 2.5rem;
+}
+
+.sigi-cep-status {
+  font-size: 1.1rem;
+  line-height: 1;
+  z-index: 4;
+}
+
+.sigi-cep-feedback {
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+

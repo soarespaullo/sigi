@@ -568,7 +568,7 @@ def nova_matricula():
             membro_id=form.membro_id.data,
             data_matricula=form.data_matricula.data or date.today(),
             status=form.status.data,
-            observacoes=form.observacoes.data
+            observacoes=sanitizar_html(form.observacoes.data)
         )
         db.session.add(matricula)
         db.session.commit()

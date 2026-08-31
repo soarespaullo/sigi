@@ -19,59 +19,108 @@
     </div>
   </div>
 
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-xl-7">
-      <div class="card shadow-sm border-0">
-        <div class="card-header fw-bold bg-white">
-          <i class="bi bi-person-lines-fill text-primary me-1"></i> Dados da Matrícula
+  <!-- Form Card -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <form method="post">
+        {{ form.hidden_tag() }}
+
+        <!-- Informações da Matrícula -->
+        <div class="sigi-form-section-title">
+          <i class="bi bi-person-vcard text-primary"></i> Informações da Matrícula
         </div>
-        <div class="card-body p-4">
-          <form method="post">
-            {{ form.hidden_tag() }}
 
-            <div class="mb-3">
-              {{ form.membro_id.label(class="form-label") }}
-              {{ form.membro_id(class="form-select") }}
-              {% if form.membro_id.errors %}
-                <div class="text-danger small">{{ form.membro_id.errors[0] }}</div>
-              {% endif %}
-            </div>
-
-            <div class="mb-3">
-              {{ form.classe_id.label(class="form-label") }}
-              {{ form.classe_id(class="form-select") }}
-              {% if form.classe_id.errors %}
-                <div class="text-danger small">{{ form.classe_id.errors[0] }}</div>
-              {% endif %}
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                {{ form.data_matricula.label(class="form-label") }}
-                {{ form.data_matricula(class="form-control", type="date") }}
-              </div>
-              <div class="col-md-6">
-                {{ form.status.label(class="form-label") }}
-                {{ form.status(class="form-select") }}
-              </div>
-            </div>
-
-            <div class="mb-4">
-              {{ form.observacoes.label(class="form-label") }}
-              {{ form.observacoes(class="form-control", rows=3, placeholder="Observações pedagógicas, histórico, etc.") }}
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
-              <a href="{{ url_for('ebd.listar_matriculas') }}" class="btn btn-outline-secondary">Cancelar</a>
-              <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle me-1"></i> Confirmar Matrícula
-              </button>
-            </div>
-          </form>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            {{ form.membro_id.label(class="form-label") }}
+            <input type="hidden" name="membro_id" id="membro_id" value="{{ form.membro_id.data or '' }}">
+            <input type="text" class="form-control" id="membro_busca" 
+                   placeholder="Digite o nome para buscar o aluno..."
+                   data-sigi-autocomplete
+                   data-url="{{ url_for('api.buscar_membros', status='Ativo') }}"
+                   data-hidden-input="#membro_id"
+                   data-mode="lookup"
+                   value="{% if form.membro_id.data %}{% for val, lbl in form.membro_id.choices if val == form.membro_id.data %}{{ lbl }}{% endfor %}{% endif %}">
+            <div class="form-text text-muted small"><i class="bi bi-info-circle me-1"></i> Digite as primeiras letras do nome para selecionar o aluno.</div>
+            {% if form.membro_id.errors %}
+              <div class="text-danger small mt-1">{{ form.membro_id.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {{ form.classe_id.label(class="form-label") }}
+            {{ form.classe_id(class="form-select") }}
+            {% if form.classe_id.errors %}
+              <div class="text-danger small mt-1">{{ form.classe_id.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {{ form.data_matricula.label(class="form-label") }}
+            {{ form.data_matricula(class="form-control", type="date") }}
+            {% if form.data_matricula.errors %}
+              <div class="text-danger small mt-1">{{ form.data_matricula.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-select") }}
+            {% if form.status.errors %}
+              <div class="text-danger small mt-1">{{ form.status.errors[0] }}</div>
+            {% endif %}
+          </div>
         </div>
-      </div>
+
+        <!-- Observações Pedagógicas -->
+        <div class="sigi-form-section-title">
+          <i class="bi bi-chat-left-text text-primary"></i> Observações Pedagógicas
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observações Pedagógicas</label>
+            <input type="hidden" name="observacoes" id="observacoes_input" value="{{ form.observacoes.data or '' }}">
+            <div class="sigi-editor-wrapper" id="observacoesEditorWrapper">
+              <div id="observacoesEditorContainer">{{ (form.observacoes.data or '') | safe }}</div>
+              <div class="sigi-editor-footer">
+                <span id="observacoesCharCount">0 caracteres</span>
+                <span id="observacoesWordCount">0 palavras</span>
+              </div>
+            </div>
+            <div class="form-text small text-muted mt-1">
+              <i class="bi bi-info-circle me-1"></i> Observações pedagógicas, histórico, necessidades específicas ou recomendações do aluno.
+            </div>
+            {% if form.observacoes.errors %}
+              <div class="text-danger small mt-1">{{ form.observacoes.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="d-flex gap-2 pt-3 border-top">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check2-circle me-1"></i> Confirmar Matrícula
+          </button>
+          <a href="{{ url_for('ebd.listar_matriculas') }}" class="btn btn-outline-secondary">
+            Cancelar
+          </a>
+        </div>
+      </form>
     </div>
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  initSigiEditor({
+    editorId: 'observacoesEditorContainer',
+    inputId: 'observacoes_input',
+    charCountId: 'observacoesCharCount',
+    wordCountId: 'observacoesWordCount',
+    placeholder: 'Observações pedagógicas, histórico ou recomendações do aluno...',
+    minHeight: 160
+  });
+});
+</script>
 {% endblock %}

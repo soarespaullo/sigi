@@ -30,12 +30,14 @@
     <div class="card-body p-3">
       <form class="row g-2 align-items-center" method="get" action="{{ url_for('patrimonio.buscar_patrimonios') }}">
         <div class="col-md-6 col-lg-5">
-          <div class="input-group">
-            <span class="input-group-text bg-white border-end-0 text-muted">
-              <i class="bi bi-search"></i>
-            </span>
-            <input name="q" id="searchInput" type="text" class="form-control border-start-0 ps-0" 
-                   placeholder="Buscar por nome, categoria ou número de patrimônio..." value="{{ termo if termo }}">
+          <div class="sigi-search-field">
+            <i class="bi bi-search sigi-search-icon"></i>
+            <input name="q" id="searchInput" type="text" class="form-control sigi-search-input" 
+                   placeholder="Buscar por nome, categoria ou número de patrimônio..." value="{{ termo if termo }}"
+                   data-sigi-autocomplete
+                   data-url="{{ url_for('api.buscar_patrimonios') }}"
+                   data-mode="search"
+                   data-min-chars="2">
           </div>
         </div>
         <div class="col-auto">

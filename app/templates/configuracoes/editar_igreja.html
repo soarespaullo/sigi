@@ -45,9 +45,14 @@
             {{ form.cnpj.label(class="form-label") }}
             {{ form.cnpj(class="form-control", placeholder="00.000.000/0000-00") }}
           </div>
-          <div class="col-12">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold" for="igreja_cep">CEP da Sede / Congregação</label>
+            <input type="text" id="igreja_cep" class="form-control" placeholder="00000-000" data-sigi-cep
+                   data-target-logradouro="#endereco_igreja">
+          </div>
+          <div class="col-md-8">
             {{ form.endereco.label(class="form-label") }}
-            {{ form.endereco(class="form-control", placeholder="Rua, número, complemento, bairro, cidade - UF, CEP") }}
+            {{ form.endereco(class="form-control", id="endereco_igreja", placeholder="Rua, número, complemento, bairro, cidade - UF, CEP") }}
           </div>
           <div class="col-md-6">
             {{ form.telefone.label(class="form-label") }}

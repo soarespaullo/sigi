@@ -37,7 +37,14 @@
           </div>
           <div class="col-md-6">
             <label class="form-label">Membro Vinculado</label>
-            {{ form.membro_id(class="form-select") }}
+            <input type="hidden" name="membro_id" id="membro_id" value="{{ form.membro_id.data or '' }}">
+            <input type="text" class="form-control" id="membro_busca" 
+                   placeholder="Digite para buscar o membro..."
+                   data-sigi-autocomplete
+                   data-url="{{ url_for('api.buscar_membros') }}"
+                   data-hidden-input="#membro_id"
+                   data-mode="lookup"
+                   value="{% if form.membro_id.data %}{% for val, lbl in form.membro_id.choices if val == form.membro_id.data %}{{ lbl }}{% endfor %}{% endif %}">
           </div>
           <div class="col-md-6">
             <label class="form-label">Remetente</label>

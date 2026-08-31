@@ -19,70 +19,83 @@
     </div>
   </div>
 
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-xl-7">
-      <div class="card shadow-sm border-0">
-        <div class="card-header fw-bold bg-white">
-          <i class="bi bi-calendar3 text-primary me-1"></i> Informações do Período
+  <!-- Form Card -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <form method="post">
+        {{ form.hidden_tag() }}
+
+        <!-- Informações do Período -->
+        <div class="sigi-form-section-title">
+          <i class="bi bi-calendar-range text-primary"></i> Informações do Período Letivo
         </div>
-        <div class="card-body p-4">
-          <form method="post">
-            {{ form.hidden_tag() }}
 
-            <div class="mb-3">
-              {{ form.nome.label(class="form-label") }}
-              {{ form.nome(class="form-control", placeholder="Ex: 3º Trimestre 2026 - As Parábolas de Jesus") }}
-              {% if form.nome.errors %}
-                <div class="text-danger small">{{ form.nome.errors[0] }}</div>
-              {% endif %}
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                {{ form.data_inicio.label(class="form-label") }}
-                {{ form.data_inicio(class="form-control", type="date") }}
-                {% if form.data_inicio.errors %}
-                  <div class="text-danger small">{{ form.data_inicio.errors[0] }}</div>
-                {% endif %}
-              </div>
-              <div class="col-md-6">
-                {{ form.data_fim.label(class="form-label") }}
-                {{ form.data_fim(class="form-control", type="date") }}
-                {% if form.data_fim.errors %}
-                  <div class="text-danger small">{{ form.data_fim.errors[0] }}</div>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="mb-3">
-              {{ form.status.label(class="form-label") }}
-              {{ form.status(class="form-select") }}
-            </div>
-
-            <div class="mb-4">
-              <label class="form-label fw-semibold">Observações e Diretrizes do Trimestre</label>
-              <input type="hidden" name="observacoes" id="observacoes_input" value="{{ form.observacoes.data or '' }}">
-              <div class="sigi-editor-wrapper" id="observacoesEditorWrapper">
-                <div id="observacoesEditorContainer">{{ (form.observacoes.data or '') | safe }}</div>
-                <div class="sigi-editor-footer">
-                  <span id="observacoesCharCount">0 caracteres</span>
-                  <span id="observacoesWordCount">0 palavras</span>
-                </div>
-              </div>
-              <div class="form-text small text-muted mt-1">
-                <i class="bi bi-info-circle me-1"></i> Descreva temas, revistas adotadas, datas comemorativas e orientações aos professores.
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
-              <a href="{{ url_for('ebd.listar_periodos') }}" class="btn btn-outline-secondary">Cancelar</a>
-              <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle me-1"></i> Salvar Período
-              </button>
-            </div>
-          </form>
+        <div class="row g-3 mb-4">
+          <div class="col-md-8">
+            {{ form.nome.label(class="form-label") }}
+            {{ form.nome(class="form-control", placeholder="Ex: 3º Trimestre 2026 - As Parábolas de Jesus") }}
+            {% if form.nome.errors %}
+              <div class="text-danger small mt-1">{{ form.nome.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-select") }}
+            {% if form.status.errors %}
+              <div class="text-danger small mt-1">{{ form.status.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {{ form.data_inicio.label(class="form-label") }}
+            {{ form.data_inicio(class="form-control", type="date") }}
+            {% if form.data_inicio.errors %}
+              <div class="text-danger small mt-1">{{ form.data_inicio.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {{ form.data_fim.label(class="form-label") }}
+            {{ form.data_fim(class="form-control", type="date") }}
+            {% if form.data_fim.errors %}
+              <div class="text-danger small mt-1">{{ form.data_fim.errors[0] }}</div>
+            {% endif %}
+          </div>
         </div>
-      </div>
+
+        <!-- Diretrizes & Observações do Trimestre -->
+        <div class="sigi-form-section-title">
+          <i class="bi bi-journal-bookmark text-primary"></i> Diretrizes & Observações do Trimestre
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observações e Diretrizes Pedagógicas</label>
+            <input type="hidden" name="observacoes" id="observacoes_input" value="{{ form.observacoes.data or '' }}">
+            <div class="sigi-editor-wrapper" id="observacoesEditorWrapper">
+              <div id="observacoesEditorContainer">{{ (form.observacoes.data or '') | safe }}</div>
+              <div class="sigi-editor-footer">
+                <span id="observacoesCharCount">0 caracteres</span>
+                <span id="observacoesWordCount">0 palavras</span>
+              </div>
+            </div>
+            <div class="form-text small text-muted mt-1">
+              <i class="bi bi-info-circle me-1"></i> Descreva temas, revistas adotadas, datas comemorativas e orientações aos professores da EBD.
+            </div>
+            {% if form.observacoes.errors %}
+              <div class="text-danger small mt-1">{{ form.observacoes.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="d-flex gap-2 pt-3 border-top">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check2-circle me-1"></i> Salvar Período
+          </button>
+          <a href="{{ url_for('ebd.listar_periodos') }}" class="btn btn-outline-secondary">
+            Cancelar
+          </a>
+        </div>
+      </form>
     </div>
   </div>
 

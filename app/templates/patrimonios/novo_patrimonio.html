@@ -59,8 +59,21 @@
             {{ form.situacao(class="form-select") }}
           </div>
           <div class="col-12">
-            {{ form.descricao.label(class="form-label") }}
-            {{ form.descricao(class="form-control", rows="3", placeholder="Marca, modelo, número de série, localização no templo...") }}
+            <label class="form-label fw-semibold">Descrição / Observações</label>
+            <input type="hidden" name="descricao" id="descricao_input" value="{{ form.descricao.data or '' }}">
+            <div class="sigi-editor-wrapper" id="descricaoEditorWrapper">
+              <div id="descricaoEditorContainer">{{ (form.descricao.data or '') | safe }}</div>
+              <div class="sigi-editor-footer">
+                <span id="descricaoCharCount">0 caracteres</span>
+                <span id="descricaoWordCount">0 palavras</span>
+              </div>
+            </div>
+            <div class="form-text small text-muted mt-1">
+              <i class="bi bi-info-circle me-1"></i> Marca, modelo, número de série, estado de conservação ou localização no templo.
+            </div>
+            {% if form.descricao.errors %}
+              <div class="text-danger small mt-1">{{ form.descricao.errors[0] }}</div>
+            {% endif %}
           </div>
         </div>
 
@@ -77,4 +90,19 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  initSigiEditor({
+    editorId: 'descricaoEditorContainer',
+    inputId: 'descricao_input',
+    charCountId: 'descricaoCharCount',
+    wordCountId: 'descricaoWordCount',
+    placeholder: 'Marca, modelo, número de série, localização no templo ou observações do bem...',
+    minHeight: 160
+  });
+});
+</script>
 {% endblock %}

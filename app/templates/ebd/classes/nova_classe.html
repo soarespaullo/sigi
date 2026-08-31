@@ -19,74 +19,97 @@
     </div>
   </div>
 
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-xl-7">
-      <div class="card shadow-sm border-0">
-        <div class="card-header fw-bold bg-white">
-          <i class="bi bi-grid-3x3-gap text-primary me-1"></i> Dados da Classe
+  <!-- Form Card -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <form method="post">
+        {{ form.hidden_tag() }}
+
+        <!-- Informações da Classe -->
+        <div class="sigi-form-section-title">
+          <i class="bi bi-info-circle text-primary"></i> Informações da Classe
         </div>
-        <div class="card-body p-4">
-          <form method="post">
-            {{ form.hidden_tag() }}
 
-            <div class="mb-3">
-              {{ form.nome.label(class="form-label") }}
-              {{ form.nome(class="form-control", placeholder="Ex: Jovens - Geração Forte, Adultos, Primários...") }}
-              {% if form.nome.errors %}
-                <div class="text-danger small">{{ form.nome.errors[0] }}</div>
-              {% endif %}
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                {{ form.periodo_id.label(class="form-label") }}
-                {{ form.periodo_id(class="form-select") }}
-              </div>
-              <div class="col-md-6">
-                {{ form.faixa_etaria.label(class="form-label") }}
-                {{ form.faixa_etaria(class="form-control", placeholder="Ex: 18 a 30 anos") }}
-              </div>
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                {{ form.sala.label(class="form-label") }}
-                {{ form.sala(class="form-control", placeholder="Ex: Sala 04 - 1º Andar") }}
-              </div>
-              <div class="col-md-3">
-                {{ form.capacidade.label(class="form-label") }}
-                {{ form.capacidade(class="form-control", type="number") }}
-              </div>
-              <div class="col-md-3">
-                {{ form.status.label(class="form-label") }}
-                {{ form.status(class="form-select") }}
-              </div>
-            </div>
-
-            <div class="mb-4">
-              <label class="form-label fw-semibold">Ementa e Descrição da Classe</label>
-              <input type="hidden" name="descricao" id="descricao_input" value="{{ form.descricao.data or '' }}">
-              <div class="sigi-editor-wrapper" id="descricaoEditorWrapper">
-                <div id="descricaoEditorContainer">{{ (form.descricao.data or '') | safe }}</div>
-                <div class="sigi-editor-footer">
-                  <span id="descricaoCharCount">0 caracteres</span>
-                  <span id="descricaoWordCount">0 palavras</span>
-                </div>
-              </div>
-              <div class="form-text small text-muted mt-1">
-                <i class="bi bi-info-circle me-1"></i> Ementa da classe, objetivos pedagógicos, faixa etária e perfil dos alunos.
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
-              <a href="{{ url_for('ebd.listar_classes') }}" class="btn btn-outline-secondary">Cancelar</a>
-              <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle me-1"></i> Salvar Classe
-              </button>
-            </div>
-          </form>
+        <div class="row g-3 mb-4">
+          <div class="col-md-8">
+            {{ form.nome.label(class="form-label") }}
+            {{ form.nome(class="form-control", placeholder="Ex: Jovens - Geração Forte, Adultos, Primários...") }}
+            {% if form.nome.errors %}
+              <div class="text-danger small mt-1">{{ form.nome.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.periodo_id.label(class="form-label") }}
+            {{ form.periodo_id(class="form-select") }}
+            {% if form.periodo_id.errors %}
+              <div class="text-danger small mt-1">{{ form.periodo_id.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.faixa_etaria.label(class="form-label") }}
+            {{ form.faixa_etaria(class="form-control", placeholder="Ex: 18 a 30 anos") }}
+            {% if form.faixa_etaria.errors %}
+              <div class="text-danger small mt-1">{{ form.faixa_etaria.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.sala.label(class="form-label") }}
+            {{ form.sala(class="form-control", placeholder="Ex: Sala 04 - 1º Andar") }}
+            {% if form.sala.errors %}
+              <div class="text-danger small mt-1">{{ form.sala.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-2">
+            {{ form.capacidade.label(class="form-label") }}
+            {{ form.capacidade(class="form-control", type="number") }}
+            {% if form.capacidade.errors %}
+              <div class="text-danger small mt-1">{{ form.capacidade.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-2">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-select") }}
+            {% if form.status.errors %}
+              <div class="text-danger small mt-1">{{ form.status.errors[0] }}</div>
+            {% endif %}
+          </div>
         </div>
-      </div>
+
+        <!-- Ementa e Diretrizes Pedagógicas -->
+        <div class="sigi-form-section-title">
+          <i class="bi bi-file-earmark-text text-primary"></i> Ementa & Diretrizes Pedagógicas
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <label class="form-label fw-semibold">Ementa e Descrição da Classe</label>
+            <input type="hidden" name="descricao" id="descricao_input" value="{{ form.descricao.data or '' }}">
+            <div class="sigi-editor-wrapper" id="descricaoEditorWrapper">
+              <div id="descricaoEditorContainer">{{ (form.descricao.data or '') | safe }}</div>
+              <div class="sigi-editor-footer">
+                <span id="descricaoCharCount">0 caracteres</span>
+                <span id="descricaoWordCount">0 palavras</span>
+              </div>
+            </div>
+            <div class="form-text small text-muted mt-1">
+              <i class="bi bi-info-circle me-1"></i> Ementa da classe, objetivos pedagógicos, faixa etária e perfil dos alunos.
+            </div>
+            {% if form.descricao.errors %}
+              <div class="text-danger small mt-1">{{ form.descricao.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="d-flex gap-2 pt-3 border-top">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check2-circle me-1"></i> Salvar Classe
+          </button>
+          <a href="{{ url_for('ebd.listar_classes') }}" class="btn btn-outline-secondary">
+            Cancelar
+          </a>
+        </div>
+      </form>
     </div>
   </div>
 

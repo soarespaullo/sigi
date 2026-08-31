@@ -6,6 +6,7 @@ from datetime import datetime
 from werkzeug.datastructures import MultiDict
 from flask_login import login_required, current_user
 from utils.logs import registrar_log
+from utils.sanitizer import sanitizar_html
 from app.decorators import permission_required
 
 patrimonio_bp = Blueprint("patrimonio", __name__, url_prefix="/patrimonios")
@@ -62,7 +63,7 @@ def novo_patrimonio():
     if form.validate_on_submit():
         item = Patrimonio(
             nome=form.nome.data,
-            descricao=form.descricao.data,
+            descricao=sanitizar_html(form.descricao.data),
             categoria=form.categoria.data,
             numero=form.numero.data,
             valor=_to_float(form.valor.data),
@@ -97,7 +98,7 @@ def editar_patrimonio(id):
 
     if form.validate_on_submit():
         item.nome = form.nome.data
-        item.descricao = form.descricao.data
+        item.descricao = sanitizar_html(form.descricao.data)
         item.categoria = form.categoria.data
         item.numero = form.numero.data
         item.valor = _to_float(form.valor.data)

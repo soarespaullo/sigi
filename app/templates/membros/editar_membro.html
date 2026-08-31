@@ -197,17 +197,17 @@
                   <i class="bi bi-geo-alt text-primary"></i> Localização Residencial
                 </div>
               </div>
-              <div class="col-12">
-                {{ form.endereco.label(class="form-label") }}
-                {{ form.endereco(class="form-control", readonly=True, placeholder="Rua, número, cidade, estado") }}
-              </div>
-              <div class="col-md-6">
-                {{ form.bairro.label(class="form-label") }}
-                {{ form.bairro(class="form-control", readonly=True, placeholder="Digite o bairro") }}
-              </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 {{ form.cep.label(class="form-label") }}
-                {{ form.cep(class="form-control", id="cep", readonly=True, placeholder="Digite o CEP") }}
+                {{ form.cep(class="form-control", id="cep", readonly=True, placeholder="00000-000", **{"data-sigi-cep": "", "data-target-logradouro": "#endereco_edit_input", "data-target-bairro": "#bairro_edit_input"}) }}
+              </div>
+              <div class="col-md-8">
+                {{ form.endereco.label(class="form-label") }}
+                {{ form.endereco(class="form-control", id="endereco_edit_input", readonly=True, placeholder="Rua, número, complemento") }}
+              </div>
+              <div class="col-12">
+                {{ form.bairro.label(class="form-label") }}
+                {{ form.bairro(class="form-control", id="bairro_edit_input", readonly=True, placeholder="Digite o bairro") }}
               </div>
             </div>
           </div>

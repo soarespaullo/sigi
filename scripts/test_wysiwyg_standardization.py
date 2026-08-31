@@ -263,6 +263,42 @@ class TestWysiwygStandardization(unittest.TestCase):
         self.assertIn("<strong>Romanos 5:1-11</strong>", aula.resumo_conteudo)
         self.assertIn("Trazer Bíblias", aula.observacoes)
 
+    def test_cadastro_visitante_wysiwyg(self):
+        """Valida que a tela pública de cadastro de visitante contém o editor WYSIWYG e persiste mensagens ricas."""
+        from app.models import PublicLink
+
+        link = PublicLink.query.filter_by(tipo="visitante", ativo=True).first()
+        if not link:
+            novo_hash = PublicLink.gerar_hash()
+            link = PublicLink(tipo="visitante", hash=novo_hash, ativo=True)
+            db.session.add(link)
+            db.session.commit()
+
+        # 1. Testar GET na tela de visitante
+        res_get = self.client.get(f"/membros/cadastro-visitante/{link.hash}")
+        self.assertEqual(res_get.status_code, 200)
+        html = res_get.get_data(as_text=True)
+        self.assertIn("sigi-editor-wrapper", html)
+        self.assertIn("observacoesEditorContainer", html)
+        self.assertIn("observacoes_input", html)
+        self.assertIn("initSigiEditor", html)
+
+        # 2. Testar POST com mensagem rica formatada
+        res_post = self.client.post(f"/membros/cadastro-visitante/{link.hash}", data={
+            "nome": "Visitante Teste WYSIWYG",
+            "telefone": "(11) 98888-7766",
+            "email": "visitante_wysiwyg@teste.com",
+            "data_nascimento": "1995-05-20",
+            "sexo": "Masculino",
+            "estado_civil": "Solteiro",
+            "observacoes": "<p>Peço oração pela minha <strong>família</strong> e saúde.</p>"
+        }, follow_redirects=True)
+        self.assertEqual(res_post.status_code, 200)
+
+        visitante = Member.query.filter_by(email="visitante_wysiwyg@teste.com").first()
+        self.assertIsNotNone(visitante)
+        self.assertIn("<strong>família</strong>", visitante.observacoes)
+
 
 if __name__ == "__main__":
     unittest.main()

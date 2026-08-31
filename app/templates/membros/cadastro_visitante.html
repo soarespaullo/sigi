@@ -26,6 +26,8 @@
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/editor.css') }}" rel="stylesheet">
 
     <style>
         body {
@@ -158,23 +160,25 @@
                             <i class="bi bi-geo-alt text-primary"></i> Localização <span class="text-muted fw-normal small">(opcional)</span>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Endereço Residencial</label>
-                            <input type="text" class="form-control" name="endereco" placeholder="Rua, número, complemento">
-                        </div>
-
                         <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">CEP</label>
+                                <input type="text" class="form-control" name="cep" id="cep" placeholder="00000-000" data-sigi-cep
+                                       data-target-logradouro="#endereco"
+                                       data-target-bairro="#bairro"
+                                       data-target-cidade="#naturalidade">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Endereço Residencial</label>
+                                <input type="text" class="form-control" name="endereco" id="endereco" placeholder="Rua, número, complemento">
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label">Bairro</label>
-                                <input type="text" class="form-control" name="bairro" placeholder="Digite seu bairro">
+                                <input type="text" class="form-control" name="bairro" id="bairro" placeholder="Digite seu bairro">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Cidade / Naturalidade</label>
-                                <input type="text" class="form-control" name="naturalidade" placeholder="Cidade onde mora">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">CEP</label>
-                                <input type="text" class="form-control" name="cep" placeholder="00000-000">
+                                <input type="text" class="form-control" name="naturalidade" id="naturalidade" placeholder="Cidade onde mora">
                             </div>
                         </div>
 
@@ -184,8 +188,18 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">Mensagem ou Pedido</label>
-                            <textarea class="form-control" name="observacoes" rows="3" placeholder="Deixe aqui seus pedidos de oração ou alguma observação..."></textarea>
+                            <label class="form-label fw-semibold">Mensagem ou Pedido</label>
+                            <input type="hidden" name="observacoes" id="observacoes_input" value="">
+                            <div class="sigi-editor-wrapper" id="observacoesEditorWrapper">
+                                <div id="observacoesEditorContainer"></div>
+                                <div class="sigi-editor-footer">
+                                    <span id="observacoesCharCount">0 caracteres</span>
+                                    <span id="observacoesWordCount">0 palavras</span>
+                                </div>
+                            </div>
+                            <div class="form-text small text-muted mt-1">
+                                <i class="bi bi-info-circle me-1"></i> Deixe aqui seus pedidos de oração, agradecimentos ou alguma observação...
+                            </div>
                         </div>
 
                         <!-- Botão Finalizar -->
@@ -204,8 +218,23 @@
     <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/jquery-1.12.4.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+    <script src="{{ url_for('static', filename='js/sigi-editor.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sigi-cep.js') }}?v=2.0"></script>
 
     <script>
+        // Inicializar Editor WYSIWYG
+        document.addEventListener("DOMContentLoaded", function () {
+            initSigiEditor({
+                editorId: 'observacoesEditorContainer',
+                inputId: 'observacoes_input',
+                charCountId: 'observacoesCharCount',
+                wordCountId: 'observacoesWordCount',
+                placeholder: 'Deixe aqui seus pedidos de oração, agradecimentos ou alguma observação...',
+                minHeight: 140
+            });
+        });
+
         // Mostrar campo do cônjuge quando Estado Civil = Casado
         document.getElementById("estado_civil").addEventListener("change", function () {
             var conjugeBox = document.getElementById("conjuge-box");
@@ -220,12 +249,6 @@
         document.querySelector('input[name="telefone"]').addEventListener('input', function (e) {
             var x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
             e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-        });
-
-        // Máscara para CEP
-        document.querySelector('input[name="cep"]').addEventListener('input', function (e) {
-            var x = e.target.value.replace(/\D/g, '').match(/(\d{0,5})(\d{0,3})/);
-            e.target.value = !x[2] ? x[1] : x[1] + '-' + x[2];
         });
     </script>
 </body>

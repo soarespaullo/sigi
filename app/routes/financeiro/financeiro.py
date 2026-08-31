@@ -19,6 +19,7 @@ from app.routes.financeiro.forms import (
 from app.services.upload_service import UploadService
 from flask_login import login_required, current_user
 from utils.logs import registrar_log
+from utils.sanitizer import sanitizar_html
 from app.decorators import permission_required
 
 financeiro_bp = Blueprint("financeiro", __name__, url_prefix="/financeiro")
@@ -168,7 +169,7 @@ def entradas():
             conta=form.conta.data,
             departamento=form.departamento.data,
             descricao=form.descricao.data.strip() if form.descricao.data else form.tipo_receita.data,
-            observacoes=form.observacoes.data.strip() if form.observacoes.data else None,
+            observacoes=sanitizar_html(form.observacoes.data) if form.observacoes.data else None,
             usuario=current_user.nome,
             comprovante=comprovante_rel_path
         )
@@ -184,13 +185,14 @@ def entradas():
     filtro_data_inicio = request.args.get("inicio", "").strip()
     filtro_data_fim = request.args.get("fim", "").strip()
 
-    query = Financeiro.query.filter_by(tipo="Entrada")
+    query = Financeiro.query.outerjoin(Member).filter(Financeiro.tipo == "Entrada")
     if filtro:
         query = query.filter(
             or_(
                 Financeiro.descricao.ilike(f"%{filtro}%"),
                 Financeiro.conta.ilike(f"%{filtro}%"),
-                Financeiro.forma_pagamento.ilike(f"%{filtro}%")
+                Financeiro.forma_pagamento.ilike(f"%{filtro}%"),
+                Member.nome.ilike(f"%{filtro}%"),
             )
         )
     if filtro_categoria:
@@ -260,7 +262,7 @@ def saidas():
             conta=form.conta.data,
             cnpj_fornecedor=form.cnpj_fornecedor.data.strip() if form.cnpj_fornecedor.data else None,
             descricao=form.descricao.data.strip() if form.descricao.data else form.categoria.data,
-            observacoes=form.observacoes.data.strip() if form.observacoes.data else None,
+            observacoes=sanitizar_html(form.observacoes.data) if form.observacoes.data else None,
             usuario=current_user.nome,
             comprovante=comprovante_rel_path
         )
@@ -526,7 +528,7 @@ def editar_entrada(id):
         entrada.conta = form.conta.data
         entrada.departamento = form.departamento.data
         entrada.descricao = form.descricao.data
-        entrada.observacoes = form.observacoes.data
+        entrada.observacoes = sanitizar_html(form.observacoes.data) if form.observacoes.data else None
 
         membro_sel = form.membro_id.data if form.membro_id.data and form.membro_id.data > 0 else None
         entrada.membro_id = membro_sel
@@ -566,7 +568,7 @@ def editar_saida(id):
         saida.conta = form.conta.data
         saida.cnpj_fornecedor = form.cnpj_fornecedor.data
         saida.descricao = form.descricao.data
-        saida.observacoes = form.observacoes.data
+        saida.observacoes = sanitizar_html(form.observacoes.data) if form.observacoes.data else None
 
         if form.comprovante.data:
             novo_path = UploadService.save_image(form.comprovante.data, subfolder="financeiro")
