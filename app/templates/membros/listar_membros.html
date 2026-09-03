@@ -106,7 +106,15 @@
             </td>
             <td>
               <div class="text-secondary small">{{ membro.email or 'Sem e-mail' }}</div>
-              <div class="text-muted small">{{ membro.telefone or '-' }}</div>
+              <div class="text-muted small d-flex align-items-center gap-1">
+                <span>{{ membro.telefone or '-' }}</span>
+                {% if membro.telefone and membro.is_whatsapp %}
+                  {% set clean_phone = membro.telefone | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') | replace('+', '') %}
+                  <a href="https://wa.me/55{{ clean_phone }}" target="_blank" class="btn-whatsapp ms-1" style="width: 22px; height: 22px; font-size: 0.75rem;" title="Conversar no WhatsApp">
+                    <i class="bi bi-whatsapp"></i>
+                  </a>
+                {% endif %}
+              </div>
             </td>
             <td>
               {% if membro.batizado %}

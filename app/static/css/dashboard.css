@@ -156,3 +156,191 @@
   background-color: var(--sigi-surface-subtle);
   border-radius: var(--sigi-radius-md);
 }
+
+/* Quick Actions Bar */
+.quick-actions-card {
+  background: var(--sigi-surface);
+  border: 1px solid var(--sigi-border);
+  border-radius: var(--sigi-radius-xl);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--sigi-shadow-sm);
+  margin-bottom: 1.5rem;
+}
+
+.quick-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: var(--sigi-radius-lg);
+  border: 1px solid var(--sigi-border);
+  background: var(--sigi-surface);
+  color: var(--sigi-text-main);
+  text-decoration: none;
+  transition: var(--sigi-transition-fast);
+  box-shadow: var(--sigi-shadow-xs);
+}
+
+.quick-action-btn:hover {
+  background: var(--sigi-surface-subtle);
+  color: var(--sigi-primary);
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: var(--sigi-shadow-sm);
+}
+
+.quick-action-btn i {
+  font-size: 1.1rem;
+}
+
+/* Operational Alerts Banner */
+.dashboard-alert-banner {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--sigi-radius-lg);
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dashboard-alert-banner.alert-warning-soft {
+  background: #fffbeb;
+  border-color: #fef08a;
+}
+
+.dashboard-alert-banner.alert-info-soft {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+/* WhatsApp Micro-Action */
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #15803d;
+  border: none;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: var(--sigi-transition-fast);
+}
+
+.btn-whatsapp:hover {
+  background: #22c55e;
+  color: #ffffff;
+  transform: scale(1.12);
+}
+
+/* Progress bar for Escala */
+.escala-progress {
+  height: 6px;
+  border-radius: 999px;
+  background-color: #e2e8f0;
+  overflow: hidden;
+}
+
+.escala-progress-bar {
+  height: 100%;
+  background-color: #10b981;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Subtitle and contextual badges */
+.kpi-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 767.98px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .quick-actions-card {
+    padding: 0.75rem;
+  }
+  
+  .quick-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   🌙 Dashboard Dark Mode Enhancements
+   ========================================================================== */
+[data-theme="dark"] .quick-actions-card {
+  background: var(--sigi-surface);
+  border-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .quick-action-btn {
+  background: #0f172a;
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .quick-action-btn:hover {
+  background: var(--sigi-surface-subtle);
+  border-color: var(--sigi-primary);
+  color: var(--sigi-primary);
+}
+
+[data-theme="dark"] .year-navigator-pill {
+  background: #0f172a;
+  border-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .year-navigator-pill a {
+  color: var(--sigi-text-secondary);
+}
+
+[data-theme="dark"] .year-navigator-pill a:hover {
+  background: var(--sigi-surface-subtle);
+  color: var(--sigi-primary);
+}
+
+[data-theme="dark"] .dashboard-alert-banner.alert-warning-soft {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .dashboard-alert-banner.alert-info-soft {
+  background: rgba(14, 165, 233, 0.12);
+  border-color: rgba(14, 165, 233, 0.25);
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .anniversary-list .list-group-item {
+  background: transparent;
+  color: var(--sigi-text-main);
+  border-bottom-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .anniversary-list .list-group-item:hover {
+  background-color: var(--sigi-surface-hover);
+}
+
+[data-theme="dark"] .escala-progress {
+  background-color: #334155;
+}
+
+

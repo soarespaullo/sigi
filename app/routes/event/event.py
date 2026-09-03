@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, jsonify
 from flask_mail import Message
 from datetime import datetime, timedelta
 from app.extensions import db, mail              # ✅ importa db e mail da extensions.py
@@ -7,6 +7,7 @@ from app.routes.event.forms import EventoForm    # ✅ ajusta para app.routes
 from flask_login import login_required, current_user   # 👈 protege rotas com Flask-Login
 from utils.logs import registrar_log             # 👈 importa função de log
 from app.decorators import permission_required   # 🔹 importa o decorator
+from app.models.permissions_helper import has_permission
 from utils.sanitizer import sanitizar_html
 
 event_bp = Blueprint("event", __name__, url_prefix="/eventos")
@@ -190,3 +191,115 @@ def evento_publico_token(public_token):
         return render_template("eventos/evento_expirado.html", evento=evento), 410
 
     return render_template("eventos/evento_publico.html", evento=evento)
+
+
+# -----------------------------
+# 📅 Feed de Eventos para FullCalendar (JSON)
+# -----------------------------
+@event_bp.route("/api/calendario", methods=["GET"])
+@login_required
+@permission_required("eventos", "view")
+def api_calendario():
+    start_str = request.args.get("start")
+    end_str = request.args.get("end")
+    termo = request.args.get("q", "").strip().lower()
+
+    query = Evento.query
+
+    # Filtro de intervalo de datas enviado pelo FullCalendar
+    if start_str:
+        try:
+            start_clean = start_str[:19]
+            start_dt = datetime.fromisoformat(start_clean)
+            query = query.filter(Evento.data_fim >= start_dt)
+        except Exception:
+            pass
+
+    if end_str:
+        try:
+            end_clean = end_str[:19]
+            end_dt = datetime.fromisoformat(end_clean)
+            query = query.filter(Evento.data_inicio <= end_dt)
+        except Exception:
+            pass
+
+    # Filtro de busca textual (se fornecido)
+    if termo:
+        query = query.filter(
+            (Evento.titulo.ilike(f"%{termo}%")) |
+            (Evento.tipo.ilike(f"%{termo}%")) |
+            (Evento.organizador.ilike(f"%{termo}%"))
+        )
+
+    eventos = query.all()
+
+    can_edit = has_permission("eventos", "edit")
+    can_delete = has_permission("eventos", "delete")
+    can_view = has_permission("eventos", "view")
+
+    STATUS_CONFIG = {
+        "confirmado": {"bg": "#2563eb", "border": "#1d4ed8", "badge": "bg-success", "text": "Confirmado"},
+        "planejado": {"bg": "#f59e0b", "border": "#d97706", "badge": "bg-warning", "text": "Planejado"},
+        "em andamento": {"bg": "#0ea5e9", "border": "#0284c7", "badge": "bg-info", "text": "Em Andamento"},
+        "em_andamento": {"bg": "#0ea5e9", "border": "#0284c7", "badge": "bg-info", "text": "Em Andamento"},
+        "concluído": {"bg": "#64748b", "border": "#475569", "badge": "bg-secondary", "text": "Concluído"},
+        "concluido": {"bg": "#64748b", "border": "#475569", "badge": "bg-secondary", "text": "Concluído"},
+        "cancelado": {"bg": "#ef4444", "border": "#dc2626", "badge": "bg-danger", "text": "Cancelado"},
+    }
+
+    TIPO_MAP = {
+        "culto especial": "Culto Especial",
+        "culto_especial": "Culto Especial",
+        "retiro": "Retiro",
+        "batismo": "Batismo",
+        "reunião": "Reunião",
+        "reuniao": "Reunião",
+        "evangelismo": "Evangelismo",
+        "conferência": "Conferência",
+        "conferencia": "Conferência",
+        "outros": "Outros"
+    }
+
+    eventos_json = []
+    for ev in eventos:
+        status_key = (ev.status or "confirmado").lower().strip()
+        status_cfg = STATUS_CONFIG.get(status_key, {
+            "bg": "#2563eb", "border": "#1d4ed8", "badge": "bg-primary", "text": status_key.capitalize()
+        })
+        tipo_formatado = TIPO_MAP.get((ev.tipo or "").lower().strip(), (ev.tipo or "Geral").title())
+
+        # Formato ISO seguro para compatibilidade
+        start_iso = ev.data_inicio.strftime("%Y-%m-%dT%H:%M:%S") if ev.data_inicio else None
+        end_iso = ev.data_fim.strftime("%Y-%m-%dT%H:%M:%S") if ev.data_fim else None
+
+        eventos_json.append({
+            "id": ev.id,
+            "title": ev.titulo,
+            "start": start_iso,
+            "end": end_iso,
+            "backgroundColor": status_cfg["bg"],
+            "borderColor": status_cfg["border"],
+            "textColor": "#ffffff",
+            "extendedProps": {
+                "id": ev.id,
+                "titulo": ev.titulo,
+                "descricao": ev.descricao or "",
+                "tipo": ev.tipo or "",
+                "tipo_formatado": tipo_formatado,
+                "status": ev.status or "confirmado",
+                "status_formatado": status_cfg["text"],
+                "status_badge": status_cfg["badge"],
+                "local": ev.local or "-",
+                "organizador": ev.organizador or "-",
+                "data_inicio_fmt": ev.data_inicio.strftime("%d/%m/%Y %H:%M") if ev.data_inicio else "-",
+                "data_fim_fmt": ev.data_fim.strftime("%d/%m/%Y %H:%M") if ev.data_fim else "-",
+                "public_url": url_for("event.evento_publico_token", public_token=ev.public_token),
+                "edit_url": url_for("event.editar_evento", id=ev.id),
+                "delete_url": url_for("event.excluir_evento", id=ev.id),
+                "can_edit": can_edit,
+                "can_delete": can_delete,
+                "can_view": can_view
+            }
+        })
+
+    return jsonify(eventos_json)

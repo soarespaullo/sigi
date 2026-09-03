@@ -37,11 +37,27 @@
           </div>
           <div class="col-md-6">
             {{ form.categoria.label(class="form-label") }}
-            {{ form.categoria(class="form-select") }}
+            {{ form.categoria(class="form-select", id="categoriaSelect") }}
           </div>
           <div class="col-md-6">
-            {{ form.numero.label(class="form-label") }}
-            {{ form.numero(class="form-control", placeholder="Código / Tombamento patrimonial") }}
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label mb-0" for="numero">
+                {{ form.numero.label.text }}
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" style="font-size: 0.72rem;">
+                  <i class="bi bi-magic me-1"></i>Sugerido automaticamente
+                </span>
+              </label>
+              <button type="button" class="btn btn-link p-0 text-decoration-none small text-primary" id="btnRecarregarEtiqueta" title="Recalcular próxima etiqueta">
+                <i class="bi bi-arrow-clockwise"></i> Recalcular
+              </button>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-tag"></i></span>
+              {{ form.numero(class="form-control font-monospace fw-semibold text-primary", id="numeroEtiqueta", placeholder="Ex: PAT-EQU-013") }}
+            </div>
+            <div class="form-text small text-muted">
+              Preenchimento sequencial automático por categoria mantendo o padrão de tombamento.
+            </div>
           </div>
           <div class="col-md-6">
             {{ form.valor.label(class="form-label") }}
@@ -103,6 +119,45 @@ document.addEventListener("DOMContentLoaded", function() {
     placeholder: 'Marca, modelo, número de série, localização no templo ou observações do bem...',
     minHeight: 160
   });
+
+  // Atualização dinâmica da etiqueta por categoria
+  const catSelect = document.getElementById("categoriaSelect");
+  const numInput = document.getElementById("numeroEtiqueta");
+  const btnRecarregar = document.getElementById("btnRecarregarEtiqueta");
+
+  function buscarProximaEtiqueta(forcar = false) {
+    if (!catSelect || !numInput) return;
+    const cat = catSelect.value;
+    if (!cat) return;
+
+    fetch(`{{ url_for('patrimonio.api_proxima_etiqueta') }}?categoria=${encodeURIComponent(cat)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.sucesso && data.etiqueta) {
+          numInput.value = data.etiqueta;
+          numInput.classList.add("bg-primary-subtle");
+          setTimeout(() => numInput.classList.remove("bg-primary-subtle"), 400);
+        }
+      })
+      .catch(err => console.error("Erro ao buscar etiqueta:", err));
+  }
+
+  if (catSelect) {
+    catSelect.addEventListener("change", function() {
+      buscarProximaEtiqueta(true);
+    });
+  }
+
+  if (btnRecarregar) {
+    btnRecarregar.addEventListener("click", function() {
+      buscarProximaEtiqueta(true);
+    });
+  }
+
+  // Se o campo estiver vazio ao carregar, preenche imediatamente
+  if (numInput && !numInput.value.trim()) {
+    buscarProximaEtiqueta();
+  }
 });
 </script>
 {% endblock %}

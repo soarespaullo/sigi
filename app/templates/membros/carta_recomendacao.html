@@ -2,85 +2,251 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Carta de Recomendação</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carta de Recomendação — {{ membro.nome }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
     @page {
       size: A4;
-      margin: 3cm 2cm 2.5cm 2cm;
+      margin: 2.5cm 2cm 2.5cm 2cm;
     }
-    body { font-family: Arial, sans-serif; font-size: 12pt; color: #333; line-height: 1.6; }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 12pt;
+      color: #1e293b;
+      line-height: 1.7;
+      margin: 0;
+      padding: 0;
+      background-color: #f1f5f9;
+    }
+
+    /* Barra de Ações (Oculta na Impressão) */
+    .action-bar-doc {
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .action-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f2b5c;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+    .btn-print {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .btn-print:hover {
+      background: #1d4ed8;
+    }
+    .btn-back {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    .btn-back:hover {
+      background: #cbd5e1;
+    }
+
+    /* Folha A4 no Navegador */
+    .document-page {
+      max-width: 800px;
+      margin: 0 auto 40px auto;
+      background: #ffffff;
+      padding: 60px 50px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      min-height: 1000px;
+      position: relative;
+    }
 
     header {
       text-align: center;
       margin-bottom: 40px;
     }
     header img {
-      height: 80px;
-      margin-bottom: 10px;
+      height: 75px;
+      margin-bottom: 12px;
+      object-fit: contain;
     }
     header h2 {
       margin: 0;
       font-size: 16pt;
       font-weight: bold;
+      color: #0f2b5c;
     }
     header p {
-      margin: 0;
+      margin: 5px 0 0 0;
       font-size: 12pt;
+      color: #475569;
+      font-weight: 600;
     }
 
-    main { text-align: justify; }
+    main {
+      text-align: justify;
+      color: #334155;
+    }
+    main p {
+      margin-bottom: 18px;
+      text-indent: 40px;
+    }
+    main .dados-membro {
+      text-indent: 0;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      line-height: 1.8;
+    }
 
     .assinatura {
-      margin-top: 80px;
+      margin-top: 70px;
       text-align: center;
     }
     .linha-assinatura {
-      margin-top: 40px;
-      border-top: 1px solid #000;
-      width: 250px;
+      margin-top: 50px;
+      border-top: 1.5px solid #0f172a;
+      width: 280px;
       margin-left: auto;
       margin-right: auto;
+    }
+    .assinatura p {
+      text-indent: 0;
+      margin-top: 6px;
+      font-weight: 600;
     }
 
     footer {
       text-align: center;
-      font-size: 10pt;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      font-size: 9.5pt;
+      color: #64748b;
+      margin-top: 60px;
+      padding-top: 15px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* Regras de Impressão e PDF */
+    @media print {
+      body {
+        background: transparent !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .document-page {
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        min-height: auto !important;
+      }
+      header img {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <img src="{{ request.url_root }}static/img/logo.png" alt="Logo da Igreja">
-    <h2>Sistema Integrado de Gestão de Igreja (SiGI)</h2>
-    <p>Carta de Recomendação</p>
-  </header>
 
-  <main>
-    <p>A Igreja Evangélica, por meio de seu Pastor Presidente, vem por meio desta recomendar o(a) irmão(ã):</p>
-
-    <p><strong>Nome:</strong> {{ membro.nome }}<br>
-    <strong>Data de Nascimento:</strong> {{ membro.data_nascimento.strftime('%d/%m/%Y') if membro.data_nascimento else '-' }}<br>
-    <strong>Membro Desde:</strong> {{ membro.data_cadastro.strftime('%d/%m/%Y') if membro.data_cadastro else '-' }}<br>
-    <strong>Função/Atuação:</strong> {{ membro.funcao or '-' }}</p>
-
-    <p>O referido(a) irmão(ã) tem demonstrado conduta cristã exemplar, fidelidade à Palavra de Deus, participação ativa nas atividades da igreja e testemunho digno perante a comunidade.</p>
-
-    <p>Recomendamos, portanto, que seja recebido(a) com plena comunhão na Igreja de destino, confiando que continuará servindo ao Senhor com dedicação e amor.</p>
-
-    <p>Guarabira/PB, {{ data_emissao }}</p>
-
-    <div class="assinatura">
-      <div class="linha-assinatura"></div>
-      <p>Pastor Presidente</p>
+  <!-- Barra de Ações do Documento (Oculta ao imprimir ou salvar em PDF) -->
+  <div class="action-bar-doc no-print">
+    <div class="action-title">
+      <i class="bi bi-file-earmark-text text-primary fs-5"></i>
+      <span>Carta de Recomendação Oficial</span>
     </div>
-  </main>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      {% if todos_membros %}
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <label for="selectMembro" style="font-size: 12px; font-weight: 600; color: #475569;">Membro:</label>
+        <select id="selectMembro" onchange="if(this.value) window.location.href='/membros/carta_recomendacao/' + this.value;" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; max-width: 230px; background: #fff;">
+          {% for m in todos_membros %}
+            <option value="{{ m.id }}" {% if m.id == membro.id %}selected{% endif %}>
+              {{ m.nome }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <a href="javascript:history.back()" class="btn-action btn-back">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </a>
+      <button onclick="window.print()" class="btn-action btn-print">
+        <i class="bi bi-printer"></i> Imprimir / Salvar em PDF
+      </button>
+    </div>
+  </div>
 
-  <footer>
-    Emitido em {{ data_emissao }}
-  </footer>
+  <!-- Folha Oficial -->
+  <div class="document-page">
+    <header>
+      <img src="{{ url_for('static', filename='img/logo.png', _external=True) }}" alt="Logo da Igreja">
+      <h2>Sistema Integrado de Gestão de Igreja (SiGI)</h2>
+      <p>Carta de Recomendação</p>
+    </header>
+
+    <main>
+      <p>A Igreja Evangélica, por meio de seu Pastor Presidente, vem por meio desta recomendar o(a) irmão(ã):</p>
+
+      <div class="dados-membro">
+        <strong>Nome:</strong> {{ membro.nome }}<br>
+        <strong>Número da Carteira:</strong> {{ membro.numero_carteira or 'Pendente' }}<br>
+        <strong>Data de Nascimento:</strong> {{ membro.data_nascimento.strftime('%d/%m/%Y') if membro.data_nascimento else '-' }}<br>
+        <strong>Membro Desde:</strong> {{ membro.data_cadastro.strftime('%d/%m/%Y') if membro.data_cadastro else '-' }}<br>
+        <strong>Função/Atuação:</strong> {{ membro.funcao or 'Membro em Comunhão' }}
+      </div>
+
+      <p>O referido(a) irmão(ã) tem demonstrado conduta cristã exemplar, fidelidade à Palavra de Deus, participação ativa nas atividades da igreja e testemunho digno perante a comunidade de fé.</p>
+
+      <p>Recomendamos, portanto, que seja recebido(a) com plena comunhão na Igreja de destino, confiando que continuará servindo ao Senhor com dedicação, integridade e amor ministerial.</p>
+
+      <p style="margin-top: 30px;">Guarabira/PB, {{ data_emissao }}.</p>
+
+      <div class="assinatura">
+        <div class="linha-assinatura"></div>
+        <p>Pastor Presidente da Igreja</p>
+      </div>
+    </main>
+
+    <footer>
+      Documento emitido pelo SiGI em {{ data_emissao }} &bull; Validade Ministerial
+    </footer>
+  </div>
+
 </body>
 </html>

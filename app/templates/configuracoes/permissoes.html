@@ -169,6 +169,22 @@
         </div>
       </div>
 
+      <!-- Escala de Obreiros & Voluntários -->
+      <div class="col-md-6 col-xl-4">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header fw-bold text-primary">
+            <i class="bi bi-clipboard-check me-1"></i> Escalas & Voluntários
+          </div>
+          <div class="card-body">
+            <div class="form-check form-switch mb-2">{{ form.escalas_view(class_="form-check-input") }} {{ form.escalas_view.label(class="form-check-label") }}</div>
+            <div class="form-check form-switch mb-2">{{ form.escalas_create(class_="form-check-input") }} {{ form.escalas_create.label(class="form-check-label") }}</div>
+            <div class="form-check form-switch mb-2">{{ form.escalas_edit(class_="form-check-input") }} {{ form.escalas_edit.label(class="form-check-label") }}</div>
+            <div class="form-check form-switch mb-2">{{ form.escalas_delete(class_="form-check-input") }} {{ form.escalas_delete.label(class="form-check-label") }}</div>
+            <div class="form-check form-switch">{{ form.escalas_gerenciar(class_="form-check-input") }} {{ form.escalas_gerenciar.label(class="form-check-label") }}</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Usuários -->
       <div class="col-md-6 col-xl-4">
         <div class="card shadow-sm border-0 h-100">

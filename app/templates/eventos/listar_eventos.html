@@ -2,6 +2,167 @@
 {% block title %}Calendário de Eventos — SiGI{% endblock %}
 {% block nav_eventos_active %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ==========================================================================
+     Customização do FullCalendar no Design System SiGI
+     ========================================================================== */
+  .fc {
+    font-family: inherit;
+    --fc-border-color: #e2e8f0;
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: #f8fafc;
+    --fc-list-event-hover-bg-color: #f1f5f9;
+    --fc-today-bg-color: rgba(37, 99, 235, 0.04);
+  }
+
+  /* Barra de Ferramentas / Header do FullCalendar */
+  .fc .fc-toolbar {
+    margin-bottom: 1.25rem;
+    gap: 0.75rem;
+  }
+  .fc .fc-toolbar-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--sigi-text-main, #0f172a);
+    text-transform: capitalize;
+  }
+
+  /* Botões nativos do FullCalendar */
+  .fc .fc-button-primary {
+    background-color: #ffffff;
+    border-color: #cbd5e1;
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+  }
+  .fc .fc-button-primary:hover {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+    color: var(--sigi-primary, #2563eb);
+  }
+  .fc .fc-button-primary:focus,
+  .fc .fc-button-primary:not(:disabled):active,
+  .fc .fc-button-primary:not(:disabled).fc-button-active {
+    background-color: var(--sigi-primary, #2563eb) !important;
+    border-color: var(--sigi-primary, #2563eb) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
+  }
+  .fc .fc-button-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Cabeçalho dos dias da semana */
+  .fc .fc-col-header-cell {
+    background-color: #f8fafc;
+    padding: 0.6rem 0;
+    border-color: #e2e8f0;
+  }
+  .fc .fc-col-header-cell-cushion {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    text-decoration: none !important;
+  }
+
+  /* Células de dias */
+  .fc .fc-daygrid-day-frame {
+    min-height: 105px;
+    transition: background-color 0.15s ease;
+  }
+  .fc .fc-daygrid-day:hover .fc-daygrid-day-frame {
+    background-color: rgba(248, 250, 252, 0.7);
+  }
+  .fc .fc-daygrid-day-top {
+    padding: 4px 8px;
+  }
+  .fc .fc-daygrid-day-number {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none !important;
+  }
+  .fc .fc-day-today .fc-daygrid-day-number {
+    background-color: var(--sigi-primary, #2563eb);
+    color: #ffffff;
+    border-radius: 9999px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Estilização dos Eventos */
+  .fc-event {
+    cursor: pointer;
+    border-radius: 6px !important;
+    padding: 2px 5px !important;
+    margin-bottom: 3px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    border: none !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .fc-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.05);
+  }
+  .fc-event-title {
+    font-weight: 600;
+  }
+  .fc-event-time {
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  /* Segmented Toggle Control */
+  .sigi-view-toggle .btn {
+    font-weight: 600;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+  }
+  .sigi-view-toggle .btn:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .sigi-view-toggle .btn:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  /* Responsividade do Calendário em Telas Menores */
+  @media (max-width: 767.98px) {
+    .fc .fc-toolbar {
+      flex-direction: column;
+      gap: 0.6rem;
+      align-items: stretch;
+      text-align: center;
+    }
+    .fc .fc-toolbar-chunk {
+      display: flex;
+      justify-content: center;
+    }
+    .fc .fc-toolbar-title {
+      font-size: 1.15rem;
+    }
+    .fc .fc-daygrid-day-frame {
+      min-height: 75px;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-5">
 
@@ -13,7 +174,17 @@
       </h2>
       <p class="text-muted mb-0">Planejamento, programação e divulgação de atividades ministeriais.</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <!-- Seletor de Modo: Lista | Calendário -->
+      <div class="btn-group sigi-view-toggle" role="group" aria-label="Modo de visualização">
+        <button type="button" class="btn btn-primary" id="btnViewLista" title="Alternar para Visualização em Lista">
+          <i class="bi bi-list-ul me-1"></i> Lista
+        </button>
+        <button type="button" class="btn btn-outline-primary" id="btnViewCalendario" title="Alternar para Visualização em Calendário">
+          <i class="bi bi-calendar3 me-1"></i> Calendário
+        </button>
+      </div>
+
       {% if has_permission("eventos", "create") %}
         <a href="{{ url_for('event.novo_evento') }}" class="btn btn-primary">
           <i class="bi bi-plus-circle me-1"></i> Novo Evento
@@ -25,7 +196,7 @@
   <!-- Barra de Busca -->
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3">
-      <form class="row g-2 align-items-center" method="get" action="{{ url_for('event.buscar_eventos') }}">
+      <form class="row g-2 align-items-center" method="get" action="{{ url_for('event.buscar_eventos') }}" id="searchEventsForm">
         <div class="col-md-6 col-lg-5">
           <div class="sigi-search-field">
             <i class="bi bi-search sigi-search-icon"></i>
@@ -47,121 +218,163 @@
     </div>
   </div>
 
-  <!-- Tabela de Eventos -->
-  <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span class="fw-bold">
-        <i class="bi bi-list-check text-primary me-1"></i> Eventos Programados ({{ eventos.total if eventos.total is defined else eventos.items|length }} encontrados)
-      </span>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive border-0">
-        <table class="table align-middle mb-0">
-          <thead>
-            <tr>
-              <th scope="col">Título do Evento</th>
-              <th scope="col" class="nowrap">Tipo</th>
-              <th scope="col" class="nowrap">Data / Início</th>
-              <th scope="col" class="nowrap">Término</th>
-              <th scope="col">Local</th>
-              <th scope="col">Organizador</th>
-              <th scope="col" class="nowrap">Status</th>
-              {% if has_permission("eventos", "view") or has_permission("eventos", "edit") or has_permission("eventos", "delete") %}
-                <th scope="col" class="text-end nowrap">Ações</th>
-              {% endif %}
-            </tr>
-          </thead>
-          <tbody>
-            {% if eventos.items %}
-              {% for evento in eventos.items %}
+  <!-- ======================================================================== -->
+  <!-- 1. VISUALIZAÇÃO EM LISTA (Implementação Clássica Mantida Integralmente) -->
+  <!-- ======================================================================== -->
+  <div id="eventListView">
+    <!-- Tabela de Eventos -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">
+          <i class="bi bi-list-check text-primary me-1"></i> Eventos Programados ({{ eventos.total if eventos.total is defined else eventos.items|length }} encontrados)
+        </span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive border-0">
+          <table class="table align-middle mb-0">
+            <thead>
               <tr>
-                <td class="fw-semibold text-dark">{{ evento.titulo }}</td>
-                <td class="nowrap">
-                  <span class="badge bg-primary">
-                    {% if evento.tipo == "culto especial" or evento.tipo == "culto_especial" %}Culto Especial
-                    {% elif evento.tipo == "retiro" %}Retiro
-                    {% elif evento.tipo == "batismo" %}Batismo
-                    {% elif evento.tipo == "reunião" or evento.tipo == "reuniao" %}Reunião
-                    {% elif evento.tipo == "evangelismo" %}Evangelismo
-                    {% elif evento.tipo == "conferência" or evento.tipo == "conferencia" %}Conferência
-                    {% elif evento.tipo == "outros" %}Outros
-                    {% else %}{{ evento.tipo | title }}{% endif %}
-                  </span>
-                </td>
-                <td class="text-muted small nowrap">{{ evento.data_inicio.strftime('%d/%m/%Y %H:%M') }}</td>
-                <td class="text-muted small nowrap">{{ evento.data_fim.strftime('%d/%m/%Y %H:%M') if evento.data_fim else '-' }}</td>
-                <td class="text-secondary small">{{ evento.local or '-' }}</td>
-                <td class="text-secondary small">{{ evento.organizador or '-' }}</td>
-                <td class="nowrap">
-                  {% if evento.status == "confirmado" %}
-                    <span class="badge bg-success">Confirmado</span>
-                  {% elif evento.status == "planejado" %}
-                    <span class="badge bg-warning">Planejado</span>
-                  {% elif evento.status == "em_andamento" or evento.status == "em andamento" %}
-                    <span class="badge bg-info">Em Andamento</span>
-                  {% elif evento.status == "concluido" or evento.status == "concluído" %}
-                    <span class="badge bg-secondary">Concluído</span>
-                  {% elif evento.status == "cancelado" %}
-                    <span class="badge bg-danger">Cancelado</span>
-                  {% else %}
-                    <span class="badge bg-secondary">{{ evento.status | capitalize }}</span>
-                  {% endif %}
-                </td>
+                <th scope="col">Título do Evento</th>
+                <th scope="col" class="nowrap">Tipo</th>
+                <th scope="col" class="nowrap">Data / Início</th>
+                <th scope="col" class="nowrap">Término</th>
+                <th scope="col">Local</th>
+                <th scope="col">Organizador</th>
+                <th scope="col" class="nowrap">Status</th>
                 {% if has_permission("eventos", "view") or has_permission("eventos", "edit") or has_permission("eventos", "delete") %}
-                  <td class="text-end nowrap">
-                    <div class="d-inline-flex gap-1">
-                      {% if has_permission("eventos", "view") %}
-                        <a href="{{ url_for('event.evento_publico_token', public_token=evento.public_token, _external=True) }}" 
-                           target="_blank" class="btn btn-sm btn-outline-info btn-icon" title="Página Pública / Compartilhar">
-                          <i class="bi bi-share"></i>
+                  <th scope="col" class="text-end nowrap">Ações</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% if eventos.items %}
+                {% for evento in eventos.items %}
+                <tr>
+                  <td class="fw-semibold text-dark">{{ evento.titulo }}</td>
+                  <td class="nowrap">
+                    <span class="badge bg-primary">
+                      {% if evento.tipo == "culto especial" or evento.tipo == "culto_especial" %}Culto Especial
+                      {% elif evento.tipo == "retiro" %}Retiro
+                      {% elif evento.tipo == "batismo" %}Batismo
+                      {% elif evento.tipo == "reunião" or evento.tipo == "reuniao" %}Reunião
+                      {% elif evento.tipo == "evangelismo" %}Evangelismo
+                      {% elif evento.tipo == "conferência" or evento.tipo == "conferencia" %}Conferência
+                      {% elif evento.tipo == "outros" %}Outros
+                      {% else %}{{ evento.tipo | title }}{% endif %}
+                    </span>
+                  </td>
+                  <td class="text-muted small nowrap">{{ evento.data_inicio.strftime('%d/%m/%Y %H:%M') }}</td>
+                  <td class="text-muted small nowrap">{{ evento.data_fim.strftime('%d/%m/%Y %H:%M') if evento.data_fim else '-' }}</td>
+                  <td class="text-secondary small">{{ evento.local or '-' }}</td>
+                  <td class="text-secondary small">{{ evento.organizador or '-' }}</td>
+                  <td class="nowrap">
+                    {% if evento.status == "confirmado" %}
+                      <span class="badge bg-success">Confirmado</span>
+                    {% elif evento.status == "planejado" %}
+                      <span class="badge bg-warning">Planejado</span>
+                    {% elif evento.status == "em_andamento" or evento.status == "em andamento" %}
+                      <span class="badge bg-info">Em Andamento</span>
+                    {% elif evento.status == "concluido" or evento.status == "concluído" %}
+                      <span class="badge bg-secondary">Concluído</span>
+                    {% elif evento.status == "cancelado" %}
+                      <span class="badge bg-danger">Cancelado</span>
+                    {% else %}
+                      <span class="badge bg-secondary">{{ evento.status | capitalize }}</span>
+                    {% endif %}
+                  </td>
+                  {% if has_permission("eventos", "view") or has_permission("eventos", "edit") or has_permission("eventos", "delete") %}
+                    <td class="text-end nowrap">
+                      <div class="d-inline-flex gap-1">
+                        {% if has_permission("eventos", "view") %}
+                          <a href="{{ url_for('event.evento_publico_token', public_token=evento.public_token, _external=True) }}" 
+                             target="_blank" class="btn btn-sm btn-outline-info btn-icon" title="Página Pública / Compartilhar">
+                            <i class="bi bi-share"></i>
+                          </a>
+                        {% endif %}
+                        {% if has_permission("eventos", "edit") %}
+                          <a href="{{ url_for('event.editar_evento', id=evento.id) }}" class="btn btn-sm btn-outline-secondary btn-icon" title="Editar Evento">
+                            <i class="bi bi-pencil"></i>
+                          </a>
+                        {% endif %}
+                        {% if has_permission("eventos", "delete") %}
+                          <button type="button" class="btn btn-sm btn-outline-danger btn-icon" data-bs-toggle="modal" data-bs-target="#confirmDelete{{ evento.id }}" title="Excluir Evento">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        {% endif %}
+                      </div>
+                    </td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="8" class="p-0">
+                    <div class="sigi-empty-state">
+                      <div class="sigi-empty-icon">
+                        <i class="bi bi-calendar-x"></i>
+                      </div>
+                      <div class="sigi-empty-title">Nenhum evento encontrado</div>
+                      <div class="sigi-empty-text">Ainda não há eventos programados ou correspondentes à sua busca.</div>
+                      {% if has_permission("eventos", "create") %}
+                        <a href="{{ url_for('event.novo_evento') }}" class="btn btn-primary">
+                          <i class="bi bi-plus-circle me-1"></i> Criar Novo Evento
                         </a>
-                      {% endif %}
-                      {% if has_permission("eventos", "edit") %}
-                        <a href="{{ url_for('event.editar_evento', id=evento.id) }}" class="btn btn-sm btn-outline-secondary btn-icon" title="Editar Evento">
-                          <i class="bi bi-pencil"></i>
-                        </a>
-                      {% endif %}
-                      {% if has_permission("eventos", "delete") %}
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-icon" data-bs-toggle="modal" data-bs-target="#confirmDelete{{ evento.id }}" title="Excluir Evento">
-                          <i class="bi bi-trash"></i>
-                        </button>
                       {% endif %}
                     </div>
                   </td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-            {% else %}
-              <tr>
-                <td colspan="8" class="p-0">
-                  <div class="sigi-empty-state">
-                    <div class="sigi-empty-icon">
-                      <i class="bi bi-calendar-x"></i>
-                    </div>
-                    <div class="sigi-empty-title">Nenhum evento encontrado</div>
-                    <div class="sigi-empty-text">Ainda não há eventos programados ou correspondentes à sua busca.</div>
-                    {% if has_permission("eventos", "create") %}
-                      <a href="{{ url_for('event.novo_evento') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle me-1"></i> Criar Novo Evento
-                      </a>
-                    {% endif %}
-                  </div>
-                </td>
-              </tr>
-            {% endif %}
-          </tbody>
-        </table>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paginação da Lista -->
+    {% set pagination = eventos %}
+    {% include "pagination/pagination.html" %}
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- 2. VISUALIZAÇÃO EM CALENDÁRIO (FullCalendar Mensal Integrado) -->
+  <!-- ======================================================================== -->
+  <div id="eventCalendarView" class="d-none">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body p-3 p-md-4">
+        <!-- Legenda de Status e Guia Rápido -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-3 border-bottom">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="fw-bold text-dark small text-uppercase">
+              <i class="bi bi-palette text-primary me-1"></i> Status:
+            </span>
+            <span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Confirmado</span>
+            <span class="badge bg-warning"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Planejado</span>
+            <span class="badge bg-info"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Em Andamento</span>
+            <span class="badge bg-secondary"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Concluído</span>
+            <span class="badge bg-danger"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Cancelado</span>
+          </div>
+          <div class="text-muted small">
+            <i class="bi bi-info-circle me-1"></i> Clique em qualquer evento para ver detalhes, compartilhar ou editar
+          </div>
+        </div>
+
+        <!-- Alerta de Erro de Conexão com o Calendário -->
+        <div id="calendarErrorAlert" class="alert alert-warning d-none align-items-center gap-2 mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill fs-5 text-warning"></i>
+          <div>Não foi possível carregar os eventos no calendário. Você ainda pode usar a visualização em Lista.</div>
+        </div>
+
+        <!-- Container do FullCalendar -->
+        <div id="fullcalendar-container"></div>
       </div>
     </div>
   </div>
 
-  <!-- Paginação -->
-  {% set pagination = eventos %}
-  {% include "pagination/pagination.html" %}
 </div>
 {% endblock %}
 
 {% block modals %}
+  <!-- Modais de Exclusão da Lista (Preservados) -->
   {% for evento in eventos.items %}
     {% if has_permission("eventos", "delete") %}
       <div class="modal fade" id="confirmDelete{{ evento.id }}" tabindex="-1" aria-labelledby="confirmDeleteLabel{{ evento.id }}" aria-hidden="true">
@@ -191,4 +404,330 @@
       </div>
     {% endif %}
   {% endfor %}
+
+  <!-- Modal Unificado de Detalhes do Evento (Ao clicar no Calendário) -->
+  <div class="modal fade" id="modalDetalhesEvento" tabindex="-1" aria-labelledby="modalDetalhesEventoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow-lg border-0">
+        <div class="modal-header border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle p-2 bg-primary-subtle text-primary">
+              <i class="bi bi-calendar-event fs-5"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0 text-dark" id="modalEventoTitulo">Detalhes do Evento</h5>
+              <div class="d-flex gap-2 mt-1">
+                <span class="badge bg-primary" id="modalEventoTipo">Culto Especial</span>
+                <span class="badge" id="modalEventoStatus">Confirmado</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="vstack gap-3">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="text-muted small fw-semibold text-uppercase">Data / Início</div>
+                <div class="fw-medium text-dark d-flex align-items-center gap-1 mt-1">
+                  <i class="bi bi-clock text-primary"></i> <span id="modalEventoInicio">-</span>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="text-muted small fw-semibold text-uppercase">Término</div>
+                <div class="fw-medium text-dark d-flex align-items-center gap-1 mt-1">
+                  <i class="bi bi-clock-history text-secondary"></i> <span id="modalEventoFim">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-top pt-2">
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <div class="text-muted small fw-semibold text-uppercase">Local</div>
+                  <div class="text-dark d-flex align-items-center gap-1 mt-1">
+                    <i class="bi bi-geo-alt text-danger"></i> <span id="modalEventoLocal">-</span>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="text-muted small fw-semibold text-uppercase">Organizador</div>
+                  <div class="text-dark d-flex align-items-center gap-1 mt-1">
+                    <i class="bi bi-person text-info"></i> <span id="modalEventoOrganizador">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="modalEventoDescricaoWrapper" class="border-top pt-2 d-none">
+              <div class="text-muted small fw-semibold text-uppercase mb-1">Descrição / Observações</div>
+              <div class="text-secondary small bg-light p-3 rounded" id="modalEventoDescricao"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top bg-light-subtle d-flex justify-content-between">
+          <div>
+            <a href="#" id="btnModalPublico" target="_blank" class="btn btn-outline-info btn-sm" title="Abrir página pública de divulgação">
+              <i class="bi bi-share me-1"></i> Compartilhar
+            </a>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            <a href="#" id="btnModalEditar" class="btn btn-outline-primary btn-sm d-none">
+              <i class="bi bi-pencil me-1"></i> Editar
+            </a>
+            <button type="button" id="btnModalExcluir" class="btn btn-outline-danger btn-sm d-none">
+              <i class="bi bi-trash me-1"></i> Excluir
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão Disparado pelo Calendário -->
+  <div class="modal fade" id="modalConfirmDeleteCalendario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-danger">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Confirmar Exclusão
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir o evento <strong id="deleteCalendarioNome"></strong>?<br>
+          <span class="text-muted small">Esta ação removerá o evento do calendário e não poderá ser desfeita.</span>
+        </div>
+        <div class="modal-footer">
+          <form id="formDeleteCalendario" method="POST" action="" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-trash me-1"></i> Excluir
+            </button>
+          </form>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar JS e Localização PT-BR -->
+<script src="{{ url_for('static', filename='vendor/fullcalendar/index.global.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/fullcalendar/pt-br.global.min.js') }}"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const btnViewLista = document.getElementById('btnViewLista');
+    const btnViewCalendario = document.getElementById('btnViewCalendario');
+    const eventListView = document.getElementById('eventListView');
+    const eventCalendarView = document.getElementById('eventCalendarView');
+    const calendarEl = document.getElementById('fullcalendar-container');
+    const calendarErrorAlert = document.getElementById('calendarErrorAlert');
+
+    let calendar = null;
+    let calendarInitialized = false;
+
+    // Modal de detalhes
+    const modalDetalhesEl = document.getElementById('modalDetalhesEvento');
+    const bsModalDetalhes = new bootstrap.Modal(modalDetalhesEl);
+    const modalTitulo = document.getElementById('modalEventoTitulo');
+    const modalTipo = document.getElementById('modalEventoTipo');
+    const modalStatus = document.getElementById('modalEventoStatus');
+    const modalInicio = document.getElementById('modalEventoInicio');
+    const modalFim = document.getElementById('modalEventoFim');
+    const modalLocal = document.getElementById('modalEventoLocal');
+    const modalOrganizador = document.getElementById('modalEventoOrganizador');
+    const modalDescricao = document.getElementById('modalEventoDescricao');
+    const modalDescricaoWrapper = document.getElementById('modalEventoDescricaoWrapper');
+    const btnModalPublico = document.getElementById('btnModalPublico');
+    const btnModalEditar = document.getElementById('btnModalEditar');
+    const btnModalExcluir = document.getElementById('btnModalExcluir');
+
+    // Modal de exclusão do calendário
+    const modalDeleteEl = document.getElementById('modalConfirmDeleteCalendario');
+    const bsModalDelete = new bootstrap.Modal(modalDeleteEl);
+    const deleteNomeEl = document.getElementById('deleteCalendarioNome');
+    const formDeleteEl = document.getElementById('formDeleteCalendario');
+
+    let currentEventData = null;
+
+    // Termo de busca atual (se houver)
+    const termoBusca = "{{ termo if termo else '' }}";
+
+    // Inicialização segura do FullCalendar
+    function initFullCalendar() {
+      if (calendarInitialized || !calendarEl || typeof FullCalendar === 'undefined') {
+        if (calendar) {
+          calendar.updateSize();
+        }
+        return;
+      }
+
+      try {
+        calendar = new FullCalendar.Calendar(calendarEl, {
+          locale: 'pt-br',
+          initialView: 'dayGridMonth',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listMonth'
+          },
+          buttonText: {
+            today: 'Hoje',
+            month: 'Mês',
+            list: 'Programação'
+          },
+          navLinks: false,
+          dayMaxEvents: 3,
+          moreLinkText: function(num) {
+            return '+ ' + num + ' mais';
+          },
+          eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: false,
+            hour12: false
+          },
+          events: {
+            url: "{{ url_for('event.api_calendario') }}",
+            extraParams: function() {
+              return {
+                q: termoBusca
+              };
+            },
+            failure: function() {
+              if (calendarErrorAlert) {
+                calendarErrorAlert.classList.remove('d-none');
+                calendarErrorAlert.classList.add('d-flex');
+              }
+            }
+          },
+          eventClick: function(info) {
+            info.jsEvent.preventDefault();
+            const props = info.event.extendedProps || {};
+            currentEventData = props;
+
+            modalTitulo.textContent = props.titulo || info.event.title;
+            modalTipo.textContent = props.tipo_formatado || 'Geral';
+            modalStatus.textContent = props.status_formatado || 'Confirmado';
+            modalStatus.className = 'badge ' + (props.status_badge || 'bg-primary');
+
+            modalInicio.textContent = props.data_inicio_fmt || '-';
+            modalFim.textContent = props.data_fim_fmt || '-';
+            modalLocal.textContent = props.local || '-';
+            modalOrganizador.textContent = props.organizador || '-';
+
+            if (props.descricao && props.descricao.trim()) {
+              modalDescricao.innerHTML = props.descricao;
+              modalDescricaoWrapper.classList.remove('d-none');
+            } else {
+              modalDescricaoWrapper.classList.add('d-none');
+            }
+
+            // Ação Compartilhar / Link Público
+            if (props.public_url) {
+              btnModalPublico.href = props.public_url;
+              btnModalPublico.classList.remove('d-none');
+            } else {
+              btnModalPublico.classList.add('d-none');
+            }
+
+            // Permissão Editar
+            if (props.can_edit && props.edit_url) {
+              btnModalEditar.href = props.edit_url;
+              btnModalEditar.classList.remove('d-none');
+            } else {
+              btnModalEditar.classList.add('d-none');
+            }
+
+            // Permissão Excluir
+            if (props.can_delete && props.delete_url) {
+              btnModalExcluir.classList.remove('d-none');
+            } else {
+              btnModalExcluir.classList.add('d-none');
+            }
+
+            bsModalDetalhes.show();
+          },
+          eventDidMount: function(info) {
+            // Tooltip nativo rápido do navegador para usabilidade
+            const props = info.event.extendedProps || {};
+            const horario = props.data_inicio_fmt ? props.data_inicio_fmt : '';
+            info.el.setAttribute('title', `${info.event.title}\nHorário: ${horario}\nStatus: ${props.status_formatado || ''}`);
+          }
+        });
+
+        calendar.render();
+        calendarInitialized = true;
+      } catch (err) {
+        console.error('Erro ao inicializar FullCalendar:', err);
+        if (calendarErrorAlert) {
+          calendarErrorAlert.classList.remove('d-none');
+          calendarErrorAlert.classList.add('d-flex');
+        }
+      }
+    }
+
+    // Clique para excluir evento a partir do modal de detalhes do calendário
+    btnModalExcluir.addEventListener('click', function () {
+      if (!currentEventData) return;
+      bsModalDetalhes.hide();
+      deleteNomeEl.textContent = currentEventData.titulo;
+      formDeleteEl.action = currentEventData.delete_url;
+      bsModalDelete.show();
+    });
+
+    // Função de alternância de modo
+    function setViewMode(mode) {
+      if (mode === 'calendar') {
+        eventListView.classList.add('d-none');
+        eventCalendarView.classList.remove('d-none');
+
+        btnViewLista.classList.remove('btn-primary');
+        btnViewLista.classList.add('btn-outline-primary');
+
+        btnViewCalendario.classList.remove('btn-outline-primary');
+        btnViewCalendario.classList.add('btn-primary');
+
+        initFullCalendar();
+        if (calendar) {
+          setTimeout(function() {
+            calendar.updateSize();
+          }, 50);
+        }
+
+        sessionStorage.setItem('sigi_eventos_view', 'calendar');
+      } else {
+        eventCalendarView.classList.add('d-none');
+        eventListView.classList.remove('d-none');
+
+        btnViewCalendario.classList.remove('btn-primary');
+        btnViewCalendario.classList.add('btn-outline-primary');
+
+        btnViewLista.classList.remove('btn-outline-primary');
+        btnViewLista.classList.add('btn-primary');
+
+        sessionStorage.setItem('sigi_eventos_view', 'list');
+      }
+    }
+
+    btnViewLista.addEventListener('click', function () {
+      setViewMode('list');
+    });
+
+    btnViewCalendario.addEventListener('click', function () {
+      setViewMode('calendar');
+    });
+
+    // Recupera preferência da sessão do usuário (padrão é sempre Lista)
+    const savedView = sessionStorage.getItem('sigi_eventos_view');
+    if (savedView === 'calendar') {
+      setViewMode('calendar');
+    } else {
+      setViewMode('list');
+    }
+  });
+</script>
 {% endblock %}

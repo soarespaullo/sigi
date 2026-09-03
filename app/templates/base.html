@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}SiGI — Gestão de Igreja{% endblock %}</title>
 
+    <!-- Anti-FOUC Theme Engine (Execução Imediata) -->
+    <script>
+      (function() {
+        try {
+          const t = localStorage.getItem('sigi_theme') || 'light';
+          document.documentElement.setAttribute('data-theme', t);
+          document.documentElement.setAttribute('data-bs-theme', t);
+        } catch(e) {}
+      })();
+    </script>
+
     <!-- Favicons -->
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon/favicon-16x16.png') }}">
@@ -17,7 +28,7 @@
     <link href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" rel="stylesheet">
 
     <!-- CSS Global (Design System Premium) -->
-    <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/base.css') }}?v=4.0" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/editor.css') }}" rel="stylesheet">
     {% block extra_css %}{% endblock %}
@@ -26,13 +37,10 @@
     <!-- Navbar SaaS Unificada -->
     {% if not hide_navbar %}
     <nav class="navbar navbar-expand-lg fixed-top sigi-navbar">
-      <div class="container-fluid px-lg-4">
+      <div class="container-fluid px-2 px-xl-3">
         <!-- Brand / Logo -->
-        <a class="sigi-brand" href="{{ url_for('dashboard.dashboard') }}">
-          <span class="sigi-brand-badge">
-            <i class="bi bi-cross"></i>
-          </span>
-          <span>SiGI</span>
+        <a class="sigi-brand navbar-brand" href="{{ url_for('dashboard.dashboard') }}" style="display:flex !important; align-items:center !important; flex-shrink:0 !important; height:36px !important; margin-right:0.4rem !important; text-decoration:none !important;">
+          <img src="{{ url_for('static', filename='img/sidebar.png') }}?v=4.0" alt="SiGI" class="sigi-brand-img" height="35" style="height:35px !important; max-height:35px !important; width:auto !important; min-width:80px !important; max-width:130px !important; object-fit:contain !important; display:inline-block !important;">
         </a>
 
         <!-- Mobile Toggle Button -->
@@ -42,7 +50,7 @@
 
         <!-- Menu Links -->
         <div class="collapse navbar-collapse" id="sigiNavMenu">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-lg-1">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-2 gap-lg-1">
             <!-- Dashboard -->
             <li class="nav-item">
               <a class="nav-link {% block nav_dashboard_active %}{% endblock %}" href="{{ url_for('dashboard.dashboard') }}">
@@ -62,6 +70,11 @@
                     <i class="bi bi-person-badge text-primary"></i> Membros & Visitantes
                   </a>
                 </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('member.carteira_membro') }}">
+                    <i class="bi bi-person-vcard text-success"></i> Carteiras de Membros
+                  </a>
+                </li>
                 {% if current_user.is_admin %}
                 <li>
                   <a class="dropdown-item" href="{{ url_for('member.relatorio_membros') }}">
@@ -73,13 +86,14 @@
             </li>
             {% endif %}
 
-            <!-- Eventos & Aniversariantes -->
-            {% if has_permission('eventos', 'view') %}
+            <!-- Eventos & Escalas -->
+            {% if has_permission('eventos', 'view') or has_permission('escalas', 'view') %}
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navEventos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle {% block nav_eventos_active %}{% endblock %} {% block nav_escalas_active %}{% endblock %}" href="#" id="navEventos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-calendar3"></i> Eventos
               </a>
               <ul class="dropdown-menu" aria-labelledby="navEventos">
+                {% if has_permission('eventos', 'view') %}
                 <li>
                   <a class="dropdown-item" href="{{ url_for('event.listar_eventos') }}">
                     <i class="bi bi-calendar-event text-primary"></i> Calendário Geral
@@ -90,6 +104,32 @@
                     <i class="bi bi-gift text-warning"></i> Aniversariantes do Mês
                   </a>
                 </li>
+                {% endif %}
+
+                {% if has_permission('escalas', 'view') %}
+                {% if has_permission('eventos', 'view') %}
+                <li><hr class="dropdown-divider my-1"></li>
+                {% endif %}
+                <li>
+                  <a class="dropdown-item fw-semibold text-primary" href="{{ url_for('escala.listar_escalas') }}">
+                    <i class="bi bi-clipboard-check me-1"></i> Painel de Escalas
+                  </a>
+                </li>
+                {% if has_permission('escalas', 'create') %}
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('escala.nova_escala') }}">
+                    <i class="bi bi-plus-circle text-success"></i> Nova Escala
+                  </a>
+                </li>
+                {% endif %}
+                {% if has_permission('escalas', 'gerenciar') %}
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('escala.listar_equipes') }}">
+                    <i class="bi bi-people text-info"></i> Equipes & Funções
+                  </a>
+                </li>
+                {% endif %}
+                {% endif %}
               </ul>
             </li>
             {% endif %}
@@ -248,9 +288,9 @@
           </ul>
 
           <!-- Perfil do Usuário -->
-          <ul class="navbar-nav ms-auto align-items-lg-center">
+          <ul class="navbar-nav ms-auto align-items-lg-center flex-shrink-0">
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-white px-2 py-1" href="#" id="navPerfil" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-white px-2 py-1 flex-shrink-0" href="#" id="navPerfil" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space:nowrap;">
                 {% if current_user.foto %}
                   <img src="{{ url_for('static', filename='uploads/' ~ current_user.foto) }}" alt="Foto de {{ current_user.nome }}" class="sigi-avatar">
                 {% else %}
@@ -258,7 +298,7 @@
                     {{ (current_user.nome[0] if current_user.nome else current_user.email[0]) | upper }}
                   </div>
                 {% endif %}
-                <span class="d-none d-sm-inline fw-semibold">{{ current_user.nome or current_user.email.split('@')[0] }}</span>
+                <span class="d-none d-sm-inline fw-semibold text-truncate" style="max-width:115px;">{{ current_user.nome or current_user.email.split('@')[0] }}</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="navPerfil">
                 <li class="px-3 py-2 border-bottom mb-1">

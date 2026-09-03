@@ -93,7 +93,8 @@ from app import create_app, db
 from app.models import (
     User, Permission, UserPermission, Member, PublicLink, Evento, Financeiro,
     Patrimonio, Log, Ata, Certificado, Carta, Igreja,
-    EbdConfig, EbdPeriodo, EbdClasse, EbdProfessor, EbdMatricula, EbdAula, EbdFrequencia
+    EbdConfig, EbdPeriodo, EbdClasse, EbdProfessor, EbdMatricula, EbdAula, EbdFrequencia,
+    Equipe, EquipeFuncao, EquipeMembro, Escala, EscalaItem
 )
 
 app = create_app()
@@ -112,6 +113,7 @@ with app.app_context():
         'membros': ['view', 'create', 'edit', 'delete'],
         'patrimonios': ['view', 'create', 'edit', 'delete'],
         'ebd': ['view', 'create', 'edit', 'delete', 'frequencia'],
+        'escalas': ['view', 'create', 'edit', 'delete', 'gerenciar'],
         'perfil': ['view', 'password']
     }
     

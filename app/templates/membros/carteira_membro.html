@@ -557,10 +557,23 @@
     <div class="action-title">
       <i class="bi bi-person-vcard text-primary fs-5"></i>
       <span>Carteira de Membro Oficial</span>
+      <span class="badge" style="background:#e0e7ff; color:#3730a3; font-size:11px; padding:3px 8px; border-radius:6px; margin-left:6px;">Sequencial: 00001+</span>
     </div>
-    <div class="action-buttons">
-      <a href="javascript:history.back()" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Voltar
+    <div class="action-buttons" style="display:flex; align-items:center; gap:8px;">
+      {% if todos_membros %}
+      <div style="display:inline-flex; align-items:center; gap:6px;">
+        <label for="selectMembroCarteira" style="font-size:12px; font-weight:600; color:#475569;">Membro:</label>
+        <select id="selectMembroCarteira" onchange="if(this.value) window.location.href='/membros/carteira/' + this.value;" style="padding:6px 10px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; max-width:240px; background:#fff;">
+          {% for m in todos_membros %}
+            <option value="{{ m.id }}" {% if m.id == membro.id %}selected{% endif %}>
+              {{ m.nome }} ({{ m.numero_carteira or 'S/N' }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <a href="{{ url_for('member.listar_membros') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Membros
       </a>
       <button onclick="window.print()" class="btn btn-primary">
         <i class="bi bi-printer"></i> Imprimir Carteirinha
@@ -699,8 +712,11 @@
               <span class="info-val">{{ membro.funcao or 'Membro' }}</span>
             </div>
             <div class="info-item">
-              <span class="info-lbl">Validade da Carteira</span>
-              <span class="info-val text-danger" style="color: #b91c1c;">{{ membro.validade.strftime('%d/%m/%Y') if membro.validade else 'Indeterminada' }}</span>
+              <span class="info-lbl">Validade da Carteira (365 Dias)</span>
+              <span class="info-val text-primary" style="color: #1e3a8a; font-weight: 700;">
+                {{ membro.validade.strftime('%d/%m/%Y') if membro.validade else 'Indeterminada' }}
+                <small style="font-size: 8.5px; font-weight: 600; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 1px 5px; border-radius: 4px; margin-left: 4px;">365 DIAS</small>
+              </span>
             </div>
           </div>
 

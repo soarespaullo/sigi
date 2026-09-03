@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Escala de Voluntários — {{ escala.titulo }}</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon/favicon-32x32.png') }}">
+  <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #1e293b;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .hero-card {
+      background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);
+      color: white;
+      border-radius: 1rem;
+    }
+    .team-badge {
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="py-4 py-md-5">
+
+<div class="container" style="max-width: 780px;">
+
+  <!-- Mensagens Flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm mb-4" role="alert">
+          <i class="bi bi-info-circle-fill me-1"></i> {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Cartão Superior Hero com Informações do Culto/Escala -->
+  <div class="hero-card shadow-lg p-4 p-md-5 mb-4 text-center text-md-start">
+    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-2">
+      <span class="badge bg-white text-primary fw-bold px-3 py-1">SiGI — Escala Ministerial</span>
+      <span class="badge bg-primary bg-opacity-50 text-white">{{ escala.status_display }}</span>
+    </div>
+
+    <h1 class="fw-bold mb-3">{{ escala.titulo }}</h1>
+
+    <div class="row g-3 text-white text-opacity-90">
+      <div class="col-sm-4">
+        <i class="bi bi-calendar-check fs-5 me-1"></i>
+        <strong>{{ escala.data.strftime('%d/%m/%Y') }}</strong>
+      </div>
+      <div class="col-sm-4">
+        <i class="bi bi-clock fs-5 me-1"></i>
+        <strong>{{ escala.hora_inicio }}</strong>{% if escala.hora_fim %} às {{ escala.hora_fim }}{% endif %}
+      </div>
+      <div class="col-sm-4">
+        <i class="bi bi-geo-alt fs-5 me-1"></i>
+        {{ escala.local or 'Templo Principal' }}
+      </div>
+    </div>
+
+    {% if escala.observacoes %}
+      <div class="mt-4 p-3 bg-white bg-opacity-10 rounded-3 small">
+        <i class="bi bi-info-circle me-1"></i> <strong>Avisos aos voluntários:</strong> {{ escala.observacoes|safe }}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Lista de Equipes e Pessoas Escaladas -->
+  <div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="fw-bold mb-0 text-dark">
+        <i class="bi bi-people-fill text-primary me-2"></i> Quadro de Voluntários
+      </h4>
+      <span class="badge bg-light text-muted border px-2 py-1">
+        {{ escala.total_escalados }} pessoa(s)
+      </span>
+    </div>
+
+    {% for equipe, itens in itens_por_equipe.items() %}
+      <div class="card shadow-sm border-0 mb-3 overflow-hidden">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center" style="border-left: 5px solid {{ equipe.cor or '#0d6efd' }} !important;">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fs-5" style="color: {{ equipe.cor or '#0d6efd' }};">
+              <i class="bi {{ equipe.icone or 'bi-people' }}"></i>
+            </span>
+            <h5 class="fw-bold mb-0 text-dark">{{ equipe.nome }}</h5>
+          </div>
+          <span class="badge bg-light text-secondary border small">{{ itens|length }} pessoa(s)</span>
+        </div>
+
+        <div class="list-group list-group-flush">
+          {% for item in itens %}
+            <div class="list-group-item p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-3">
+                {% if item.membro.foto %}
+                  <img src="{{ url_for('static', filename=item.membro.foto if item.membro.foto.startswith('uploads/') else 'uploads/' ~ item.membro.foto) }}" 
+                       alt="{{ item.membro.nome }}" class="rounded-circle" style="width: 44px; height: 44px; object-fit: cover;">
+                {% else %}
+                  <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px;">
+                    {{ (item.membro.nome[0] if item.membro.nome else '?')|upper }}
+                  </div>
+                {% endif %}
+
+                <div>
+                  <div class="fw-bold text-dark fs-6">{{ item.membro.nome }}</div>
+                  <div class="small text-muted">
+                    {% if item.funcao %}
+                      <span class="badge bg-secondary bg-opacity-10 text-secondary border">{{ item.funcao.nome }}</span>
+                    {% else %}
+                      <span>Função Geral</span>
+                    {% endif %}
+                  </div>
+                  {% if item.observacao %}
+                    <div class="small text-muted mt-1 fst-italic"><i class="bi bi-chat-left-text me-1"></i>{{ item.observacao }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Status e Botão de Ação Rápida de Confirmação -->
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge {{ item.status_badge_class }} px-2 py-1">{{ item.status_display }}</span>
+
+                {% if item.status != 'confirmado' %}
+                  <form method="post" action="{{ url_for('escala.publico_confirmar_item', token=escala.public_token, item_id=item.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-success" title="Confirmar Minha Presença">
+                      <i class="bi bi-check2"></i> Confirmar
+                    </button>
+                  </form>
+                {% endif %}
+
+                {% if item.status != 'recusado' %}
+                  <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalRecusar{{ item.id }}" title="Não poderei comparecer">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Modal de Ausência para este item -->
+            <div class="modal fade" id="modalRecusar{{ item.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                  <div class="modal-header bg-danger text-white">
+                    <h6 class="modal-title fw-bold">Informar Ausência — {{ item.membro.nome }}</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                  </div>
+                  <form method="post" action="{{ url_for('escala.publico_recusar_item', token=escala.public_token, item_id=item.id) }}">
+                    <div class="modal-body p-3">
+                      <p class="small text-muted mb-2">Informe o motivo da sua ausência para que a liderança possa organizar a substituição:</p>
+                      <textarea name="motivo" class="form-control" rows="3" placeholder="Ex: Estarei viajando a trabalho, sintomas de gripe, etc." required></textarea>
+                    </div>
+                    <div class="modal-footer bg-light p-2">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Voltar</button>
+                      <button type="submit" class="btn btn-sm btn-danger">Confirmar Ausência</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Rodapé -->
+  <footer class="text-center py-4 text-muted small border-top">
+    <p class="mb-1"><strong>SiGI</strong> — Sistema Integrado de Gestão de Igreja</p>
+    <p class="mb-0">"Servi ao Senhor com alegria!" &bull; Salmos 100:2</p>
+  </footer>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

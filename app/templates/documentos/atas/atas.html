@@ -22,25 +22,23 @@
     </div>
   </div>
 
-  <!-- Barra de Busca -->
+  <!-- Barra de Pesquisa com Autocomplete Inteligente -->
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3">
-      <form class="row g-2 align-items-center" method="get" action="{{ url_for('documentos.atas.buscar_atas') }}">
-        <div class="col-md-6 col-lg-5">
-          <div class="input-group">
-            <span class="input-group-text bg-white border-end-0 text-muted">
-              <i class="bi bi-search"></i>
-            </span>
-            <input name="q" id="searchInput" type="text" class="form-control border-start-0 ps-0" 
-                   placeholder="Buscar por título, presidente ou secretário..." value="{{ termo if termo }}">
-          </div>
+      <form class="d-flex align-items-center gap-2 m-0 flex-grow-1" style="max-width: 520px; min-width: 280px;" method="get" action="{{ url_for('documentos.atas.buscar_atas') }}">
+        <div class="sigi-search-field flex-grow-1">
+          <i class="bi bi-search sigi-search-icon"></i>
+          <input name="q" id="searchInput" type="text" class="form-control form-control-sm sigi-search-input" 
+                 placeholder="Buscar por título, presidente ou secretário..." value="{{ termo if termo }}"
+                 data-sigi-autocomplete
+                 data-url="{{ url_for('api.buscar_atas') }}"
+                 data-mode="search"
+                 data-min-chars="2">
         </div>
-        <div class="col-auto">
-          <button class="btn btn-primary" type="submit">Buscar</button>
-          {% if termo %}
-            <a href="{{ url_for('documentos.atas.listar_atas') }}" class="btn btn-outline-secondary">Limpar</a>
-          {% endif %}
-        </div>
+        <button class="btn btn-sm btn-primary" type="submit">Buscar</button>
+        {% if termo %}
+          <a href="{{ url_for('documentos.atas.listar_atas') }}" class="btn btn-sm btn-outline-secondary">Limpar</a>
+        {% endif %}
       </form>
     </div>
   </div>

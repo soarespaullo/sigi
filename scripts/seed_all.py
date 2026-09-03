@@ -185,11 +185,19 @@ def seed_documentos_eventos():
     spec.loader.exec_module(doc_mod)
 
 def seed_financeiro():
-    print("💰 [6/6] Povoando Módulo Financeiro (Dízimos, Ofertas e Despesas)...")
+    print("💰 [6/7] Povoando Módulo Financeiro (Dízimos, Ofertas e Despesas)...")
     import importlib.util
     spec = importlib.util.spec_from_file_location("seed_fin", str(BASE_DIR / "scripts" / "seed_financeiro.py"))
     fin_mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(fin_mod)
+
+def seed_escalas():
+    print("📋 [7/7] Povoando Módulo de Escalas de Obreiros e Voluntários...")
+    try:
+        from scripts.seed_escalas import seed_escalas as run_seed_escalas
+        run_seed_escalas()
+    except Exception as e:
+        print(f"  ⚠️ Aviso ao popular escalas: {e}")
 
 def main():
     print("\n" + "=" * 70)
@@ -204,6 +212,7 @@ def main():
         seed_patrimonio()
         seed_documentos_eventos()
         seed_financeiro()
+        seed_escalas()
 
     print("\n" + "=" * 70)
     print("  🎉 BASE DE DADOS POVOADA COM 100% DE SUCESSO!")

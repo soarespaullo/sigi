@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Mural de Escala — {{ escala.titulo }}</title>
+  <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" rel="stylesheet">
+
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0 !important; font-size: 12pt; background: #fff !important; }
+      .card { border: 1px solid #ddd !important; box-shadow: none !important; break-inside: avoid; }
+      .badge { border: 1px solid #999 !important; color: #000 !important; background: transparent !important; }
+    }
+    body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .print-header { border-bottom: 2px solid #0d6efd; padding-bottom: 12px; margin-bottom: 20px; }
+  </style>
+</head>
+<body class="p-4">
+
+<div class="container" style="max-width: 900px;">
+
+  <!-- Botões de Controle (Ocultos na Impressão) -->
+  <div class="no-print d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded-3">
+    <a href="{{ url_for('escala.ver_escala', id=escala.id) }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Voltar para a Escala
+    </a>
+    <button onclick="window.print()" class="btn btn-primary">
+      <i class="bi bi-printer me-1"></i> Imprimir Escala (A4)
+    </button>
+  </div>
+
+  <!-- Cabeçalho Oficial da Igreja -->
+  <div class="print-header d-flex justify-content-between align-items-center flex-wrap">
+    <div>
+      <h6 class="text-uppercase text-muted fw-bold mb-1 letter-spacing-1">SiGI — Gestão Integrada de Igreja</h6>
+      <h2 class="fw-bold mb-1 text-dark">{{ escala.titulo }}</h2>
+      <div class="text-secondary">
+        <i class="bi bi-calendar-event me-1"></i> <strong>Data:</strong> {{ escala.data.strftime('%d/%m/%Y') }} &bull;
+        <i class="bi bi-clock me-1"></i> <strong>Horário:</strong> {{ escala.hora_inicio }}{% if escala.hora_fim %} às {{ escala.hora_fim }}{% endif %} &bull;
+        <i class="bi bi-geo-alt me-1"></i> <strong>Local:</strong> {{ escala.local or 'Templo Principal' }}
+      </div>
+    </div>
+    <div class="text-end">
+      <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+        Status: {{ escala.status_display }}
+      </span>
+      <div class="small text-muted mt-1">Impresso em {{ current_year }}</div>
+    </div>
+  </div>
+
+  {% if escala.observacoes %}
+    <div class="p-3 bg-light rounded-3 mb-4 border-start border-3 border-primary small">
+      <strong>Instruções & Avisos Gerais:</strong> {{ escala.observacoes|safe }}
+    </div>
+  {% endif %}
+
+  <!-- Tabela de Equipes e Voluntários -->
+  <div class="row g-4">
+    {% for equipe, itens in itens_por_equipe.items() %}
+    <div class="col-md-6">
+      <div class="card border h-100 shadow-none">
+        <div class="card-header bg-light py-2 fw-bold text-dark d-flex justify-content-between align-items-center">
+          <span><i class="bi {{ equipe.icone or 'bi-people' }} me-1"></i> {{ equipe.nome }}</span>
+          <span class="small text-muted">{{ itens|length }} voluntário(s)</span>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0 align-middle">
+            <thead class="table-light small">
+              <tr>
+                <th class="ps-3">Voluntário</th>
+                <th>Função</th>
+                <th class="text-center" style="width: 80px;">Assinatura / Visto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in itens %}
+              <tr>
+                <td class="ps-3 py-2">
+                  <div class="fw-semibold">{{ item.membro.nome }}</div>
+                  {% if item.membro_original %}
+                    <div class="small text-muted fst-italic">Subst.: {{ item.membro_original.nome }}</div>
+                  {% endif %}
+                </td>
+                <td class="small py-2">
+                  {{ item.funcao.nome if item.funcao else "Geral" }}
+                </td>
+                <td class="text-center py-2">
+                  <span style="display: inline-block; width: 60px; border-bottom: 1px solid #999;">&nbsp;</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <footer class="mt-5 pt-3 border-top text-center text-muted small">
+    "Tudo o que fizerem, façam de todo o coração, como para o Senhor, e não para os homens." &bull; Colossenses 3:23
+  </footer>
+
+</div>
+
+</body>
+</html>

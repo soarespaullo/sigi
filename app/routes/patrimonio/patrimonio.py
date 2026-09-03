@@ -1,8 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from app.extensions import db
 from app.models import Patrimonio
 from app.routes.patrimonio.forms import PatrimonioForm
 from datetime import datetime
+import re
+import unicodedata
 from werkzeug.datastructures import MultiDict
 from flask_login import login_required, current_user
 from utils.logs import registrar_log
@@ -10,6 +12,72 @@ from utils.sanitizer import sanitizar_html
 from app.decorators import permission_required
 
 patrimonio_bp = Blueprint("patrimonio", __name__, url_prefix="/patrimonios")
+
+
+def obter_prefixo_categoria(categoria: str) -> str:
+    """Retorna o prefixo oficial padronizado de etiqueta de tombamento para uma categoria."""
+    if not categoria:
+        return "PAT-GER-"
+    
+    cat_clean = categoria.strip().lower()
+    mapeamento = {
+        "imóveis": "PAT-IMO-",
+        "imoveis": "PAT-IMO-",
+        "imóvel": "PAT-IMO-",
+        "veículos": "PAT-VEI-",
+        "veiculos": "PAT-VEI-",
+        "veículo": "PAT-VEI-",
+        "equipamentos": "PAT-EQU-",
+        "equipamento": "PAT-EQU-",
+        "móveis": "PAT-MOV-",
+        "moveis": "PAT-MOV-",
+        "móvel": "PAT-MOV-",
+    }
+    if cat_clean in mapeamento:
+        return mapeamento[cat_clean]
+
+    # Fallback dinâmico: 3 letras da categoria sem acentos
+    nfkd = unicodedata.normalize("NFKD", categoria)
+    sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
+    letras = "".join([c for c in sem_acento if c.isalnum()]).upper()
+    cod = letras[:3] if len(letras) >= 3 else (letras + "XXX")[:3]
+    return f"PAT-{cod}-"
+
+
+def gerar_proxima_etiqueta_patrimonio(categoria: str) -> str:
+    """Calcula a próxima etiqueta sequencial para a categoria especificada mantendo o padrão."""
+    prefixo = obter_prefixo_categoria(categoria)
+    itens = Patrimonio.query.filter(Patrimonio.numero.like(f"{prefixo}%")).all()
+    maior_idx = 0
+    for item in itens:
+        if not item.numero:
+            continue
+        match = re.search(rf"^{re.escape(prefixo)}(\d+)$", item.numero.strip())
+        if match:
+            try:
+                num = int(match.group(1))
+                if num > maior_idx:
+                    maior_idx = num
+            except ValueError:
+                pass
+
+    proximo = maior_idx + 1
+    while Patrimonio.query.filter_by(numero=f"{prefixo}{proximo:03d}").first() is not None:
+        proximo += 1
+
+    return f"{prefixo}{proximo:03d}"
+
+
+# -----------------------------
+# 🏷️ API: Próxima Etiqueta de Tombamento
+# -----------------------------
+@patrimonio_bp.route("/api/proxima-etiqueta", methods=["GET"])
+@login_required
+@permission_required("patrimonios", "view")
+def api_proxima_etiqueta():
+    categoria = request.args.get("categoria", "").strip()
+    etiqueta = gerar_proxima_etiqueta_patrimonio(categoria)
+    return jsonify({"sucesso": True, "categoria": categoria, "etiqueta": etiqueta})
 
 
 def _normalize_date_for_form(formdata: MultiDict, field_name: str = "data_entrada"):
@@ -59,21 +127,28 @@ def novo_patrimonio():
         form = PatrimonioForm(formdata=formdata)
     else:
         form = PatrimonioForm()
+        # Pré-preenche com a próxima etiqueta sequencial da categoria padrão
+        cat_inicial = form.categoria.data or "Equipamentos"
+        form.numero.data = gerar_proxima_etiqueta_patrimonio(cat_inicial)
 
     if form.validate_on_submit():
+        etiqueta_final = (form.numero.data or "").strip()
+        if not etiqueta_final:
+            etiqueta_final = gerar_proxima_etiqueta_patrimonio(form.categoria.data)
+
         item = Patrimonio(
             nome=form.nome.data,
             descricao=sanitizar_html(form.descricao.data),
             categoria=form.categoria.data,
-            numero=form.numero.data,
+            numero=etiqueta_final,
             valor=_to_float(form.valor.data),
             data_entrada=form.data_entrada.data,
             situacao=form.situacao.data
         )
         db.session.add(item)
         db.session.commit()
-        registrar_log(current_user.nome, f"Cadastrou patrimônio: {item.nome}", "sucesso")
-        flash(f"Patrimônio {item.nome} cadastrado com sucesso!", "success")
+        registrar_log(current_user.nome, f"Cadastrou patrimônio: {item.nome} ({item.numero})", "sucesso")
+        flash(f"Patrimônio {item.nome} cadastrado com sucesso! Etiqueta: {item.numero}", "success")
         return redirect(url_for("patrimonio.listar_patrimonios"))
     else:
         if request.method == "POST":

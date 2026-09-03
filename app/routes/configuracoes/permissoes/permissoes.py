@@ -86,6 +86,13 @@ def permissoes_page():
         "ebd_delete": ("ebd", "delete"),
         "ebd_frequencia": ("ebd", "frequencia"),
 
+        # Escalas de Obreiros e Voluntários
+        "escalas_view": ("escalas", "view"),
+        "escalas_create": ("escalas", "create"),
+        "escalas_edit": ("escalas", "edit"),
+        "escalas_delete": ("escalas", "delete"),
+        "escalas_gerenciar": ("escalas", "gerenciar"),
+
         # Perfil
         "perfil_view": ("perfil", "view"),
         "perfil_password": ("perfil", "password"),

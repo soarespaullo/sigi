@@ -100,20 +100,37 @@ body {
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--sigi-shadow-md);
-  padding: 0.65rem 1.5rem;
+  padding: 0.45rem 0.85rem;
   transition: var(--sigi-transition-normal);
   z-index: 1050;
 }
 
 .sigi-brand {
   color: var(--sigi-text-inverse) !important;
-  font-weight: 700;
-  font-size: 1.25rem;
-  letter-spacing: -0.03em;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  height: 36px !important;
+  margin-right: 0.4rem !important;
+  text-decoration: none !important;
+  padding: 0 !important;
+  transition: var(--sigi-transition-fast);
+}
+
+.sigi-brand-img {
+  height: 35px !important;
+  max-height: 35px !important;
+  width: auto !important;
+  min-width: 80px !important;
+  max-width: 130px !important;
+  object-fit: contain !important;
+  display: inline-block !important;
+  margin: 0 !important;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.sigi-brand:hover .sigi-brand-img {
+  filter: brightness(1.1);
 }
 
 .sigi-brand-badge {
@@ -132,13 +149,14 @@ body {
 .sigi-navbar .nav-link {
   color: #94a3b8 !important;
   font-weight: 500;
-  font-size: 0.9rem;
-  padding: 0.5rem 0.85rem !important;
+  font-size: 0.875rem;
+  padding: 0.42rem 0.6rem !important;
   border-radius: var(--sigi-radius-md);
   transition: var(--sigi-transition-fast);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
+  white-space: nowrap !important;
 }
 
 .sigi-navbar .nav-link:hover,
@@ -962,4 +980,541 @@ footer a:hover {
   transition: all 0.2s ease;
 }
 
+/* ==========================================================================
+   🌙 DARK MODE COMPLETO & ARQUITETURA DE DESIGN SYSTEM (SiGI)
+   ========================================================================== */
+[data-theme="dark"],
+[data-bs-theme="dark"] {
+  /* Core Brand Colors */
+  --sigi-primary: #3b82f6;
+  --sigi-primary-hover: #60a5fa;
+  --sigi-primary-light: rgba(59, 130, 246, 0.16);
+  --sigi-primary-glow: rgba(59, 130, 246, 0.35);
 
+  --sigi-indigo: #6366f1;
+  --sigi-indigo-light: rgba(99, 102, 241, 0.16);
+
+  /* Status Colors */
+  --sigi-success: #10b981;
+  --sigi-success-bg: rgba(16, 185, 129, 0.16);
+  --sigi-success-text: #34d399;
+
+  --sigi-warning: #f59e0b;
+  --sigi-warning-bg: rgba(245, 158, 11, 0.16);
+  --sigi-warning-text: #fbbf24;
+
+  --sigi-danger: #ef4444;
+  --sigi-danger-bg: rgba(239, 68, 68, 0.16);
+  --sigi-danger-text: #f87171;
+
+  --sigi-info: #0ea5e9;
+  --sigi-info-bg: rgba(14, 165, 233, 0.16);
+  --sigi-info-text: #38bdf8;
+
+  /* Surfaces & Neutrals (Escala profissional sem preto puro #000000) */
+  --sigi-bg-app: #0b1120;           /* Slate 950 ultra refinado */
+  --sigi-surface: #111827;          /* Gray 900 para cards e blocos */
+  --sigi-surface-subtle: #1e293b;   /* Slate 800 para headers, hover e divisões */
+  --sigi-surface-hover: #1e293d;    /* Slate 800 / 900 hover */
+  --sigi-border: #334155;           /* Slate 700 para bordas limpas e contrastadas */
+  --sigi-border-focus: #60a5fa;     /* Azul claro acessível */
+
+  /* Typography */
+  --sigi-text-main: #f8fafc;        /* Slate 50 para legibilidade perfeita */
+  --sigi-text-secondary: #cbd5e1;   /* Slate 300 para textos de apoio */
+  --sigi-text-muted: #94a3b8;       /* Slate 400 para datas e rótulos secundários */
+  --sigi-text-inverse: #0f172a;
+
+  /* Elevations */
+  --sigi-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --sigi-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  --sigi-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --sigi-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  --sigi-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 8px 10px -6px rgba(0, 0, 0, 0.6);
+
+  /* Bootstrap Native Variables Overrides */
+  --bs-body-bg: #0b1120;
+  --bs-body-color: #f8fafc;
+  --bs-secondary-color: #cbd5e1;
+  --bs-tertiary-color: #94a3b8;
+  --bs-border-color: #334155;
+  --bs-card-bg: #111827;
+  --bs-card-border-color: #334155;
+  --bs-card-cap-bg: #111827;
+  --bs-tertiary-bg: #1e293b;
+  --bs-secondary-bg: #1e293b;
+
+  background-color: var(--sigi-bg-app);
+  color: var(--sigi-text-main);
+}
+
+/* 🎨 Normalização Global de Classes Utilitárias Bootstrap no Dark Mode */
+[data-theme="dark"] .bg-white,
+[data-bs-theme="dark"] .bg-white {
+  background-color: var(--sigi-surface) !important;
+  color: var(--sigi-text-main) !important;
+}
+
+[data-theme="dark"] .bg-light,
+[data-bs-theme="dark"] .bg-light {
+  background-color: var(--sigi-surface-subtle) !important;
+  color: var(--sigi-text-main) !important;
+}
+
+[data-theme="dark"] .text-dark,
+[data-bs-theme="dark"] .text-dark {
+  color: var(--sigi-text-main) !important;
+}
+
+[data-theme="dark"] .text-muted,
+[data-bs-theme="dark"] .text-muted {
+  color: var(--sigi-text-muted) !important;
+}
+
+[data-theme="dark"] .text-secondary,
+[data-bs-theme="dark"] .text-secondary {
+  color: var(--sigi-text-secondary) !important;
+}
+
+[data-theme="dark"] .border,
+[data-theme="dark"] .border-top,
+[data-theme="dark"] .border-bottom,
+[data-theme="dark"] .border-start,
+[data-theme="dark"] .border-end,
+[data-theme="dark"] hr {
+  border-color: var(--sigi-border) !important;
+}
+
+/* 🪪 Cards e Contêineres */
+[data-theme="dark"] .card,
+[data-theme="dark"] .dashboard-card {
+  background-color: var(--sigi-surface);
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .card-footer {
+  background-color: transparent;
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .dashboard-card:hover {
+  border-color: #475569;
+}
+
+/* 📋 Tabelas e Grids de Dados */
+[data-theme="dark"] .table {
+  color: var(--sigi-text-main);
+  border-color: var(--sigi-border);
+  --bs-table-bg: transparent;
+}
+
+[data-theme="dark"] .table thead th {
+  background-color: var(--sigi-surface-subtle);
+  color: var(--sigi-text-secondary);
+  border-bottom-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .table tbody td {
+  border-bottom-color: var(--sigi-border);
+  color: var(--sigi-text-main);
+  background-color: transparent;
+}
+
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  color: var(--sigi-text-main) !important;
+}
+
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+  background-color: var(--sigi-surface-hover) !important;
+  color: var(--sigi-text-main) !important;
+}
+
+[data-theme="dark"] .table-responsive {
+  background-color: var(--sigi-surface);
+  border-color: var(--sigi-border);
+}
+
+/* 📝 Formulários e Controles */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+  background-color: #0f172a;
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  background-color: #0f172a;
+  border-color: var(--sigi-border-focus);
+  color: var(--sigi-text-main);
+  box-shadow: 0 0 0 3.5px rgba(59, 130, 246, 0.25);
+}
+
+[data-theme="dark"] .form-control::placeholder {
+  color: #64748b;
+}
+
+[data-theme="dark"] .form-control:disabled,
+[data-theme="dark"] .form-control[readonly],
+[data-theme="dark"] .form-select:disabled {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .form-label {
+  color: var(--sigi-text-secondary);
+}
+
+[data-theme="dark"] .form-check-input {
+  background-color: #0f172a;
+  border-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .form-check-input:checked {
+  background-color: var(--sigi-primary);
+  border-color: var(--sigi-primary);
+}
+
+[data-theme="dark"] .input-group-text {
+  background-color: var(--sigi-surface-subtle);
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-secondary);
+}
+
+/* 🪟 Modais */
+[data-theme="dark"] .modal-content {
+  background-color: var(--sigi-surface);
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .modal-footer {
+  background-color: var(--sigi-surface-subtle);
+  border-top-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* 🔽 Dropdowns */
+[data-theme="dark"] .dropdown-menu {
+  background-color: var(--sigi-surface);
+  border-color: var(--sigi-border);
+  box-shadow: var(--sigi-shadow-xl);
+}
+
+[data-theme="dark"] .dropdown-item {
+  color: var(--sigi-text-secondary);
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus {
+  background-color: var(--sigi-surface-subtle);
+  color: var(--sigi-primary);
+}
+
+[data-theme="dark"] .dropdown-divider {
+  border-color: var(--sigi-border);
+}
+
+/* 🧭 Abas (Tabs) e Navegação */
+[data-theme="dark"] .sigi-nav-tabs,
+[data-theme="dark"] .nav-tabs {
+  border-bottom-color: var(--sigi-border) !important;
+}
+
+[data-theme="dark"] .sigi-nav-tabs .nav-link,
+[data-theme="dark"] .nav-tabs .nav-link {
+  color: var(--sigi-text-secondary) !important;
+}
+
+[data-theme="dark"] .sigi-nav-tabs .nav-link:hover,
+[data-theme="dark"] .nav-tabs .nav-link:hover {
+  color: var(--sigi-primary) !important;
+  background-color: var(--sigi-surface-subtle) !important;
+}
+
+[data-theme="dark"] .sigi-nav-tabs .nav-link.active,
+[data-theme="dark"] .nav-tabs .nav-link.active {
+  color: #60a5fa !important;
+  background-color: rgba(59, 130, 246, 0.16) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+/* 📄 Paginação */
+[data-theme="dark"] .page-link {
+  background-color: var(--sigi-surface);
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-secondary);
+}
+
+[data-theme="dark"] .page-link:hover {
+  background-color: var(--sigi-surface-subtle);
+  border-color: var(--sigi-border);
+  color: var(--sigi-primary);
+}
+
+[data-theme="dark"] .page-item.active .page-link {
+  background-color: var(--sigi-primary);
+  border-color: var(--sigi-primary);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .page-item.disabled .page-link {
+  background-color: var(--sigi-surface);
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-muted);
+}
+
+/* 🔔 Alertas */
+[data-theme="dark"] .alert-success {
+  background-color: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+[data-theme="dark"] .alert-danger {
+  background-color: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+[data-theme="dark"] .alert-warning {
+  background-color: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .alert-info {
+  background-color: rgba(14, 165, 233, 0.12);
+  border-color: rgba(14, 165, 233, 0.25);
+  color: #38bdf8;
+}
+
+/* 🏷️ Badges com Contraste Otimizado */
+[data-theme="dark"] .badge.bg-light {
+  background-color: var(--sigi-surface-subtle) !important;
+  color: var(--sigi-text-secondary) !important;
+  border: 1px solid var(--sigi-border);
+}
+
+[data-theme="dark"] .badge.bg-primary-subtle {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+  color: #60a5fa !important;
+}
+
+[data-theme="dark"] .badge.bg-success-subtle {
+  background-color: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+}
+
+[data-theme="dark"] .badge.bg-warning-subtle {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  color: #fbbf24 !important;
+}
+
+[data-theme="dark"] .badge.bg-danger-subtle {
+  background-color: rgba(239, 68, 68, 0.18) !important;
+  color: #f87171 !important;
+}
+
+[data-theme="dark"] .badge.bg-info-subtle {
+  background-color: rgba(14, 165, 233, 0.18) !important;
+  color: #38bdf8 !important;
+}
+
+/* 🔍 Autocomplete & Sugestões */
+[data-theme="dark"] .sigi-autocomplete-dropdown {
+  background: var(--sigi-surface);
+  border-color: var(--sigi-border);
+  box-shadow: var(--sigi-shadow-xl);
+}
+
+[data-theme="dark"] .sigi-autocomplete-item {
+  border-bottom-color: rgba(51, 65, 85, 0.6);
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .sigi-autocomplete-item:hover,
+[data-theme="dark"] .sigi-autocomplete-item.active {
+  background-color: var(--sigi-surface-subtle);
+  color: var(--sigi-primary);
+}
+
+/* 📅 FullCalendar v6 Suporte Nativo ao Dark Mode */
+[data-theme="dark"] .fc {
+  --fc-border-color: #334155;
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: #1e293b;
+  --fc-neutral-text-color: #cbd5e1;
+  --fc-today-bg-color: rgba(59, 130, 246, 0.14);
+  --fc-list-event-hover-bg-color: #1e293b;
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .fc-theme-standard th {
+  background-color: var(--sigi-surface-subtle);
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-secondary);
+}
+
+[data-theme="dark"] .fc-theme-standard td {
+  border-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .fc .fc-col-header-cell-cushion,
+[data-theme="dark"] .fc .fc-daygrid-day-number {
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .fc .fc-button-primary {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: var(--sigi-text-main);
+}
+
+[data-theme="dark"] .fc .fc-button-primary:hover,
+[data-theme="dark"] .fc .fc-button-primary.fc-button-active {
+  background-color: var(--sigi-primary);
+  border-color: var(--sigi-primary);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .fc .fc-popover {
+  background: var(--sigi-surface);
+  border-color: var(--sigi-border);
+  color: var(--sigi-text-main);
+}
+
+/* 🎨 Seletor de Tema (Card e Botões em Configurações Gerais) */
+.sigi-theme-card {
+  border-radius: var(--sigi-radius-xl);
+  border: 1px solid var(--sigi-border) !important;
+  background: var(--sigi-surface);
+  transition: var(--sigi-transition-normal);
+}
+
+.sigi-theme-switch-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.btn-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--sigi-radius-lg);
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: 2px solid var(--sigi-border);
+  background-color: var(--sigi-surface);
+  color: var(--sigi-text-main);
+  transition: var(--sigi-transition-fast);
+  cursor: pointer;
+}
+
+.btn-theme-toggle:hover {
+  border-color: var(--sigi-primary);
+  color: var(--sigi-primary);
+  transform: translateY(-1px);
+}
+
+.btn-theme-toggle.active {
+  border-color: var(--sigi-primary);
+  background-color: var(--sigi-primary-light);
+  color: var(--sigi-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+
+[data-theme="dark"] .btn-theme-toggle.active {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.28);
+}
+
+/* ==========================================================================
+   WhatsApp Integration & Badges (Card Aniversariantes & Formulários)
+   ========================================================================== */
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #15803d;
+  border: none;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: var(--sigi-transition-fast);
+}
+
+.btn-whatsapp:hover {
+  background: #22c55e;
+  color: #ffffff;
+  transform: scale(1.12);
+}
+
+/* Checkbox estilizado com ícone WhatsApp */
+.whatsapp-checkbox-wrap {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 3px 8px 3px 6px;
+  border-radius: var(--sigi-radius-md);
+  transition: var(--sigi-transition-fast);
+}
+
+.whatsapp-checkbox-wrap:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.whatsapp-checkbox-wrap .form-check-input {
+  cursor: pointer;
+  border-color: #86efac;
+}
+
+.whatsapp-checkbox-wrap .form-check-input:checked {
+  background-color: #16a34a;
+  border-color: #16a34a;
+}
+
+.whatsapp-badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.85rem;
+  transition: var(--sigi-transition-fast);
+}
+
+.whatsapp-checkbox-wrap .form-check-input:checked ~ .form-check-label .whatsapp-badge-icon {
+  background: #16a34a;
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+[data-theme="dark"] .whatsapp-checkbox-wrap {
+  background: rgba(22, 163, 74, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+[data-theme="dark"] .whatsapp-badge-icon {
+  background: rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+}

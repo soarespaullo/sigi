@@ -145,3 +145,86 @@
   color: #475569;
   font-style: italic;
 }
+
+/* ==========================================================================
+   🌙 Editor WYSIWYG Quill Dark Mode
+   ========================================================================== */
+[data-theme="dark"] .sigi-editor-wrapper {
+  background: #0f172a;
+  border-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-toolbar.ql-snow {
+  background-color: #1e293b;
+  border-bottom-color: var(--sigi-border);
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow .ql-stroke {
+  stroke: #cbd5e1;
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow .ql-fill {
+  fill: #cbd5e1;
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow .ql-picker {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow .ql-picker-options {
+  background-color: #1e293b;
+  border-color: var(--sigi-border);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow .ql-picker-item {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow button:hover .ql-stroke,
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow button.ql-active .ql-stroke,
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow .ql-picker-label:hover .ql-stroke,
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow .ql-picker-item:hover,
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow .ql-picker-item.ql-selected {
+  stroke: #60a5fa !important;
+  color: #60a5fa !important;
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow button:hover .ql-fill,
+[data-theme="dark"] .sigi-editor-wrapper .ql-snow button.ql-active .ql-fill {
+  fill: #60a5fa !important;
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-editor {
+  color: #f8fafc;
+  background-color: #0f172a;
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .ql-editor.ql-blank::before {
+  color: #64748b;
+}
+
+[data-theme="dark"] .sigi-editor-wrapper .sigi-editor-footer {
+  background-color: #1e293b;
+  border-top-color: var(--sigi-border);
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .sigi-editor-readonly {
+  background-color: #1e293b !important;
+}
+
+[data-theme="dark"] .sigi-editor-readonly .ql-editor {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .sigi-rich-content {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .sigi-rich-content blockquote {
+  border-left-color: #3b82f6;
+  color: #cbd5e1;
+}
+

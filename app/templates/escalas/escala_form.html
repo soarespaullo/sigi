@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{% if modo == 'nova' %}Nova Escala{% else %}Editar Escala{% endif %} — SiGI{% endblock %}
+{% block nav_escalas_active %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-3">
+
+  <div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+
+      <!-- Breadcrumb / Voltar -->
+      <div class="mb-3">
+        <a href="{{ url_for('escala.listar_escalas') }}" class="text-decoration-none text-muted small">
+          <i class="bi bi-arrow-left me-1"></i> Voltar para Lista de Escalas
+        </a>
+      </div>
+
+      <!-- Card do Formulário -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h4 class="fw-bold mb-1">
+            <i class="bi bi-calendar-plus text-primary me-2"></i>
+            {% if modo == 'nova' %}Cadastrar Nova Escala{% else %}Editar Escala — {{ escala.titulo }}{% endif %}
+          </h4>
+          <p class="text-muted small mb-0">Preencha os dados da atividade para organizar as equipes de obreiros e voluntários.</p>
+        </div>
+
+        <div class="card-body p-4">
+          <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="row g-3">
+              <!-- Vínculo com Culto/Evento Oficial -->
+              <div class="col-12">
+                <label class="form-label fw-semibold">{{ form.evento_id.label.text }}</label>
+                {{ form.evento_id(class="form-select", id="selectEvento") }}
+                <div class="form-text">Opcional: ao vincular a um evento cadastrado, os dados de data e horário podem ser sincronizados.</div>
+              </div>
+
+              <!-- Título da Escala -->
+              <div class="col-12">
+                <label class="form-label fw-semibold">{{ form.titulo.label.text }} <span class="text-danger">*</span></label>
+                {{ form.titulo(class="form-control" + (" is-invalid" if form.titulo.errors else ""), placeholder="Ex: Culto da Família - Domingo Noite") }}
+                {% for err in form.titulo.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                {% endfor %}
+              </div>
+
+              <!-- Data -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">{{ form.data.label.text }} <span class="text-danger">*</span></label>
+                {{ form.data(class="form-control" + (" is-invalid" if form.data.errors else ""), type="date") }}
+                {% for err in form.data.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                {% endfor %}
+              </div>
+
+              <!-- Horário de Início -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">{{ form.hora_inicio.label.text }} <span class="text-danger">*</span></label>
+                {{ form.hora_inicio(class="form-control" + (" is-invalid" if form.hora_inicio.errors else ""), placeholder="18:00") }}
+                {% for err in form.hora_inicio.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                {% endfor %}
+              </div>
+
+              <!-- Horário de Término -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">{{ form.hora_fim.label.text }}</label>
+                {{ form.hora_fim(class="form-control" + (" is-invalid" if form.hora_fim.errors else ""), placeholder="20:30") }}
+                {% for err in form.hora_fim.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                {% endfor %}
+              </div>
+
+              <!-- Local -->
+              <div class="col-md-7">
+                <label class="form-label fw-semibold">{{ form.local.label.text }}</label>
+                {{ form.local(class="form-control", placeholder="Ex: Templo Principal, Salão Social, etc.") }}
+              </div>
+
+              <!-- Status -->
+              <div class="col-md-5">
+                <label class="form-label fw-semibold">{{ form.status.label.text }}</label>
+                {{ form.status(class="form-select") }}
+              </div>
+
+              <!-- Observações Gerais com Editor WYSIWYG -->
+              <div class="col-12">
+                <label class="form-label fw-semibold">Observações Gerais / Instruções para os Voluntários</label>
+                
+                <!-- Input oculto para envio no formulário -->
+                <input type="hidden" name="observacoes" id="observacoes_input" value="{{ form.observacoes.data or '' }}">
+
+                <!-- Container do Editor de Texto Rico (WYSIWYG) -->
+                <div class="sigi-editor-wrapper" id="observacoesEditorWrapper">
+                  <div id="observacoesEditorContainer">{{ (form.observacoes.data or '') | safe }}</div>
+                  <div class="sigi-editor-footer">
+                    <span id="observacoesCharCount">0 caracteres</span>
+                    <span id="observacoesWordCount">0 palavras</span>
+                  </div>
+                </div>
+                <div class="form-text small text-muted mt-1">
+                  <i class="bi bi-info-circle me-1"></i> Utilize o editor para formatar orientações gerais aos voluntários (ex: ordem do culto, trajes, horário de oração).
+                </div>
+              </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+              <a href="{{ url_for('escala.listar_escalas') }}" class="btn btn-outline-secondary">Cancelar</a>
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-check2-circle me-1"></i> Salvar e Prosseguir
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  if (typeof initSigiEditor === "function") {
+    initSigiEditor({
+      editorId: 'observacoesEditorContainer',
+      inputId: 'observacoes_input',
+      charCountId: 'observacoesCharCount',
+      wordCountId: 'observacoesWordCount',
+      placeholder: 'Digite aqui as instruções gerais, alinhamentos, orientações e notas aos voluntários...',
+      minHeight: 180
+    });
+  }
+});
+</script>
+{% endblock %}

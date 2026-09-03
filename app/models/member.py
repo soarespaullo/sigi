@@ -18,6 +18,7 @@ class Member(db.Model):
     estado_civil = db.Column(db.String(20))
     conjuge = db.Column(db.String(120))
     telefone = db.Column(db.String(20))
+    is_whatsapp = db.Column(db.Boolean, default=False, nullable=True)
     email = db.Column(db.String(120))
 
     # Endereço
@@ -66,8 +67,8 @@ class Member(db.Model):
 
     @property
     def ativo(self):
-        """Retorna True se o membro estiver ativo (sem data de saída e com status 'Ativo' ou padrão), False caso contrário."""
-        return self.data_saida is None and (self.status is None or self.status == "Ativo")
+        """Retorna True se o membro estiver ativo (status 'Ativo' ou padrão), False caso contrário."""
+        return self.status is None or self.status == "Ativo"
 
     def __repr__(self):
         return f"<Member {self.nome}>"

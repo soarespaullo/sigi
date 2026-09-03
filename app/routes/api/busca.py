@@ -8,6 +8,7 @@ from app.models import Member, User, Financeiro
 from app.models.patrimonio import Patrimonio
 from app.models.evento import Evento
 from app.models.documento import Ata, Certificado, Carta
+from app.models.escala import Escala, EscalaItem, Equipe
 from . import api_bp
 
 
@@ -37,13 +38,9 @@ def buscar_membros():
 
     # Filtro de Status
     if status_filtro == "Ativo":
-        query = query.filter(
-            (Member.status.is_(None)) | (Member.status == "Ativo")
-        ).filter(Member.data_saida.is_(None))
+        query = query.filter((Member.status.is_(None)) | (Member.status == "Ativo"))
     elif status_filtro == "Inativo":
-        query = query.filter(
-            (Member.status == "Inativo") | (Member.data_saida.isnot(None))
-        )
+        query = query.filter(Member.status == "Inativo")
     elif status_filtro == "Transferido":
         query = query.filter(Member.status == "Transferido")
 
@@ -362,3 +359,176 @@ def buscar_saidas():
             break
 
     return jsonify(resultados)
+
+
+# ---------------------------------------------------------------------------
+# 📋 Busca de Escalas & Voluntários
+# ---------------------------------------------------------------------------
+@api_bp.route("/busca/escalas", methods=["GET"])
+@login_required
+def buscar_escalas():
+    termo = request.args.get("q", "").strip()
+    status_filtro = request.args.get("status", "")
+    limite = min(request.args.get("limit", 10, type=int), 50)
+
+    if not termo or len(termo) < 2:
+        return jsonify([])
+
+    termo_norm = remover_acentos(termo)
+    query = Escala.query
+
+    if status_filtro and status_filtro != "Todos":
+        query = query.filter(Escala.status == status_filtro)
+
+    prefixo_2 = termo_norm[:2]
+    condicoes = [
+        Escala.titulo.ilike(f"{termo}%"),
+        Escala.titulo.ilike(f"{prefixo_2}%"),
+        Escala.titulo.ilike(f"%{termo}%"),
+        Escala.titulo.ilike(f"%{termo_norm}%"),
+        Escala.local.ilike(f"%{termo}%"),
+        Escala.observacoes.ilike(f"%{termo}%"),
+    ]
+
+    escalas = (
+        query.filter(or_(*condicoes))
+        .order_by(Escala.data.desc(), Escala.hora_inicio.asc())
+        .limit(limite * 3)
+        .all()
+    )
+
+    partes_termo = termo_norm.split()
+    resultados = []
+    vistos = set()
+
+    for item in escalas:
+        titulo_norm = remover_acentos(item.titulo or "")
+        local_norm = remover_acentos(item.local or "")
+
+        match_titulo = False
+        if len(partes_termo) == 1:
+            match_titulo = titulo_norm.startswith(termo_norm) or termo_norm in titulo_norm
+        else:
+            primeira = partes_termo[0]
+            if titulo_norm.startswith(primeira) or primeira in titulo_norm:
+                match_titulo = all(parte in titulo_norm for parte in partes_termo[1:])
+
+        match_local = termo_norm in local_norm
+
+        if match_titulo or match_local:
+            label = item.titulo
+            if label in vistos:
+                continue
+            vistos.add(label)
+
+            data_str = item.data.strftime("%d/%m/%Y") if item.data else ""
+            horario = f"{item.hora_inicio or ''} às {item.hora_fim or ''}".strip()
+            subtext = f"{data_str} • {horario} • {item.local or 'Templo'}"
+
+            resultados.append({
+                "id": item.id,
+                "value": label,
+                "label": label,
+                "subtext": subtext,
+                "status": item.status_display,
+                "badge_class": item.status_badge_class,
+                "inicial": label[0].upper() if label else "E",
+                "url": url_for("escala.ver_escala", id=item.id)
+            })
+
+            if len(resultados) >= limite:
+                break
+
+    return jsonify(resultados)
+
+
+# ---------------------------------------------------------------------------
+# 📑 Busca de Atas de Reunião e Assembleia
+# ---------------------------------------------------------------------------
+@api_bp.route("/busca/atas", methods=["GET"])
+@login_required
+def buscar_atas():
+    termo = request.args.get("q", "").strip()
+    limite = min(request.args.get("limit", 10, type=int), 50)
+
+    if not termo or len(termo) < 2:
+        return jsonify([])
+
+    termo_norm = remover_acentos(termo)
+    prefixo_2 = termo_norm[:2]
+
+    condicoes = [
+        Ata.titulo.ilike(f"{termo}%"),
+        Ata.titulo.ilike(f"{prefixo_2}%"),
+        Ata.titulo.ilike(f"%{termo}%"),
+        Ata.tipo.ilike(f"{termo}%"),
+        Ata.presidente.ilike(f"{termo}%"),
+        Ata.secretario.ilike(f"{termo}%"),
+    ]
+
+    atas = (
+        Ata.query.filter(or_(*condicoes))
+        .order_by(Ata.data_emissao.desc())
+        .limit(limite * 3)
+        .all()
+    )
+
+    partes_termo = termo_norm.split()
+    resultados = []
+    vistos = set()
+
+    for item in atas:
+        titulo_norm = remover_acentos(item.titulo or "")
+        pres_norm = remover_acentos(item.presidente or "")
+        sec_norm = remover_acentos(item.secretario or "")
+        tipo_norm = remover_acentos(item.tipo or "")
+
+        match = False
+        if len(partes_termo) == 1:
+            match = (
+                titulo_norm.startswith(termo_norm)
+                or termo_norm in titulo_norm
+                or pres_norm.startswith(termo_norm)
+                or sec_norm.startswith(termo_norm)
+                or tipo_norm.startswith(termo_norm)
+            )
+        else:
+            primeira = partes_termo[0]
+            if (
+                titulo_norm.startswith(primeira)
+                or primeira in titulo_norm
+                or pres_norm.startswith(primeira)
+            ):
+                match = all(
+                    parte in titulo_norm or parte in pres_norm or parte in sec_norm
+                    for parte in partes_termo[1:]
+                )
+
+        if match:
+            label = item.titulo
+            if label in vistos:
+                continue
+            vistos.add(label)
+
+            data_str = item.data_emissao.strftime("%d/%m/%Y") if item.data_emissao else ""
+            pres_str = f" • Pres: {item.presidente}" if item.presidente else ""
+            tipo_str = item.tipo or "Ata"
+            subtext = f"{tipo_str} • {data_str}{pres_str}"
+
+            resultados.append({
+                "id": item.id,
+                "value": label,
+                "label": label,
+                "subtext": subtext,
+                "status": item.situacao or "Rascunho",
+                "inicial": label[0].upper() if label else "A",
+                "tipo": item.tipo or "Ata",
+                "data": data_str
+            })
+
+            if len(resultados) >= limite:
+                break
+
+    return jsonify(resultados)
+
+

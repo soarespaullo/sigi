@@ -35,14 +35,25 @@ def seed_permissions():
         # Patrimônios
         ("patrimonios", "view"), ("patrimonios", "create"), ("patrimonios", "edit"), ("patrimonios", "delete"),
 
+        # Escola Dominical (EBD)
+        ("ebd", "view"), ("ebd", "create"), ("ebd", "edit"), ("ebd", "delete"), ("ebd", "frequencia"),
+
+        # Escalas de Obreiros e Voluntários
+        ("escalas", "view"), ("escalas", "create"), ("escalas", "edit"), ("escalas", "delete"), ("escalas", "gerenciar"),
+
         # Perfil
         ("perfil", "view"), ("perfil", "password"),
     ]
 
-    if Permission.query.count() == 0:  # 🔹 só roda se estiver vazio
-        for area, action in perms:
+    adicionadas = 0
+    for area, action in perms:
+        if not Permission.query.filter_by(area=area, action=action).first():
             db.session.add(Permission(area=area, action=action))
+            adicionadas += 1
+
+    if adicionadas > 0:
         db.session.commit()
-        print("✅ Permissões básicas populadas com sucesso!")
+        print(f"[OK] {adicionadas} permissoes populadas com sucesso!")
     else:
-        print("ℹ️ Permissões já existem, nada foi alterado.")
+        print("[INFO] Todas as permissoes ja existem no banco de dados.")
+

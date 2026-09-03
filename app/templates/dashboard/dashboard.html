@@ -3,18 +3,18 @@
 {% block nav_dashboard_active %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=2.1">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/charts.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-5">
 
-  <!-- Header de Boas-Vindas -->
+  <!-- Header do Centro de Controle -->
   <div class="dashboard-header">
     <div>
-      <h2>Dashboard Executivo</h2>
-      <p class="mb-0">Olá, <strong>{{ user_name }}</strong>. Aqui está a visão consolidada do ministério.</p>
+      <h2>Centro de Controle Ministerial</h2>
+      <p class="mb-0">Olá, <strong>{{ user_name }}</strong>. Aqui está a visão consolidada e operacional do ministério.</p>
     </div>
     <div class="d-none d-md-flex align-items-center gap-2">
       <span class="badge bg-primary px-3 py-2">
@@ -23,24 +23,110 @@
     </div>
   </div>
 
-  <!-- Cards Principais de Indicadores -->
+  <!-- Barra de Ações Rápidas (Quick Actions) -->
+  <div class="card shadow-sm border p-3 bg-white mb-4 quick-actions-card" style="border-radius: 16px;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-lightning-charge-fill text-warning fs-5"></i>
+        <span class="fw-bold text-dark small text-uppercase">Ações Rápidas:</span>
+      </div>
+      <div class="d-flex align-items-center flex-wrap gap-2">
+        {% if has_permission('membros', 'create') %}
+        <a href="{{ url_for('member.cadastro_membro') }}" class="btn btn-sm btn-light border d-inline-flex align-items-center gap-2 px-3 py-2 fw-semibold rounded-3 text-dark text-decoration-none quick-action-btn">
+          <i class="bi bi-person-plus-fill text-primary"></i>
+          <span>Novo Membro</span>
+        </a>
+        {% endif %}
+        {% if current_user.is_admin or has_permission('financeiro', 'create') %}
+        <a href="{{ url_for('financeiro.entradas') }}" class="btn btn-sm btn-light border d-inline-flex align-items-center gap-2 px-3 py-2 fw-semibold rounded-3 text-dark text-decoration-none quick-action-btn">
+          <i class="bi bi-plus-circle-fill text-success"></i>
+          <span>Lançar Entrada</span>
+        </a>
+        {% endif %}
+        {% if has_permission('escalas', 'create') %}
+        <a href="{{ url_for('escala.nova_escala') }}" class="btn btn-sm btn-light border d-inline-flex align-items-center gap-2 px-3 py-2 fw-semibold rounded-3 text-dark text-decoration-none quick-action-btn">
+          <i class="bi bi-calendar-plus-fill text-info"></i>
+          <span>Nova Escala</span>
+        </a>
+        {% endif %}
+        {% if has_permission('eventos', 'create') %}
+        <a href="{{ url_for('event.listar_eventos') }}" class="btn btn-sm btn-light border d-inline-flex align-items-center gap-2 px-3 py-2 fw-semibold rounded-3 text-dark text-decoration-none quick-action-btn">
+          <i class="bi bi-calendar-event-fill text-secondary"></i>
+          <span>Agendar Evento</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Central de Alertas e Pendências Operacionais -->
+  {% if total_voluntarios_pendentes > 0 or aniversariantes_hoje %}
+  <div class="row g-3 mb-4">
+    {% if total_voluntarios_pendentes > 0 %}
+    <div class="col-12 {% if aniversariantes_hoje %}col-lg-6{% endif %}">
+      <div class="dashboard-alert-banner alert-warning-soft">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+          <div>
+            <strong>Escalas Pendentes:</strong> <strong>{{ total_voluntarios_pendentes }}</strong> voluntário(s) aguardando confirmação.
+          </div>
+        </div>
+        {% if has_permission('escalas', 'view') %}
+        <a href="{{ url_for('escala.listar_escalas') }}" class="btn btn-sm btn-warning fw-semibold text-dark">
+          Ver Escalas <i class="bi bi-chevron-right"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if aniversariantes_hoje %}
+    <div class="col-12 {% if total_voluntarios_pendentes > 0 %}col-lg-6{% endif %}">
+      <div class="dashboard-alert-banner alert-info-soft">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-gift-fill text-primary fs-5"></i>
+          <div>
+            <strong>Aniversário Hoje!</strong> 
+            {% for a in aniversariantes_hoje %}
+              <span class="fw-semibold">{{ a.nome }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <a href="{{ url_for('member.aniversariantes_mes') }}" class="btn btn-sm btn-outline-primary fw-semibold">
+          Felicitar <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Linha 1: Cards Principais de Indicadores Operacionais -->
   <div class="row g-4 mb-4">
-    <!-- Membros Totais (Ativos, Inativos e Transferidos) -->
+    <!-- Card 1: Membros Ativos -->
     <div class="{% if current_user.is_admin %}col-sm-6 col-xl-3{% else %}col-sm-6 col-xl-6{% endif %}">
-      <a href="{{ url_for('member.listar_membros', status='Todos') }}" class="text-decoration-none">
+      <a href="{{ url_for('member.listar_membros', status='Ativo') }}" class="text-decoration-none">
         <div class="card dashboard-card card-primary h-100">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
               <div>
-                <h6>Membros Totais</h6>
-                <h3 class="text-primary">{{ total_geral_membros }}</h3>
+                <h6>Membros Ativos</h6>
+                <h3 class="text-primary">{{ total_membros }}</h3>
               </div>
               <div class="dashboard-icon bg-primary bg-opacity-10 text-primary">
                 <i class="bi bi-people fs-4"></i>
               </div>
             </div>
-            <div class="mt-3 small text-muted text-truncate" title="{{ total_membros }} ativos • {{ total_inativos }} inativos • {{ total_transferidos }} transferidos">
-              <span class="text-success fw-semibold">{{ total_membros }}</span> ativos &bull; <span class="text-danger fw-semibold">{{ total_inativos }}</span> inativos{% if total_transferidos > 0 %} &bull; <span class="text-secondary fw-semibold">{{ total_transferidos }}</span> transf.{% endif %}
+            <div class="mt-3 small text-muted d-flex align-items-center justify-content-between">
+              <div>
+                <span class="text-secondary">{{ total_geral_membros }}</span> cadastros
+                {% if total_inativos > 0 %}&bull; <span class="text-danger">{{ total_inativos }} inativos</span>{% endif %}
+              </div>
+              {% if membros_novos_mes > 0 %}
+              <span class="badge bg-success bg-opacity-10 text-success fw-semibold">
+                +{{ membros_novos_mes }} este mês
+              </span>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -48,48 +134,52 @@
     </div>
 
     {% if current_user.is_admin %}
-    <!-- Batizados (Apenas Administrador) -->
+    <!-- Card 2: Entradas do Mês & Saldo (Apenas Administrador) -->
     <div class="col-sm-6 col-xl-3">
-      <div class="card dashboard-card card-success h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6>Batizados</h6>
-              <h3 class="text-success">{{ total_batizados }}</h3>
+      <a href="{{ url_for('financeiro.entradas') }}" class="text-decoration-none">
+        <div class="card dashboard-card card-success h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6>Entradas ({{ mes_nome }})</h6>
+                <h3 class="text-success">{{ total_entradas | currency }}</h3>
+              </div>
+              <div class="dashboard-icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-graph-up-arrow fs-4"></i>
+              </div>
             </div>
-            <div class="dashboard-icon bg-success bg-opacity-10 text-success">
-              <i class="bi bi-check-circle fs-4"></i>
+            <div class="mt-3 small text-muted">
+              Saldo Mês: <strong class="{% if saldo_operacional >= 0 %}text-success{% else %}text-danger{% endif %}">{{ saldo_operacional | currency }}</strong>
             </div>
-          </div>
-          <div class="mt-3 small text-muted">
-            Membros que professaram a fé
           </div>
         </div>
-      </div>
+      </a>
     </div>
 
-    <!-- Dizimistas (Apenas Administrador) -->
+    <!-- Card 3: Saídas do Mês & Caixa Geral (Apenas Administrador) -->
     <div class="col-sm-6 col-xl-3">
-      <div class="card dashboard-card card-warning h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6>Dizimistas</h6>
-              <h3 class="text-warning">{{ total_dizimistas }}</h3>
+      <a href="{{ url_for('financeiro.saidas') }}" class="text-decoration-none">
+        <div class="card dashboard-card card-danger h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6>Saídas ({{ mes_nome }})</h6>
+                <h3 class="text-danger">{{ total_saidas | currency }}</h3>
+              </div>
+              <div class="dashboard-icon bg-danger bg-opacity-10 text-danger">
+                <i class="bi bi-graph-down-arrow fs-4"></i>
+              </div>
             </div>
-            <div class="dashboard-icon bg-warning bg-opacity-10 text-warning">
-              <i class="bi bi-heart-pulse fs-4"></i>
+            <div class="mt-3 small text-muted">
+              Caixa Geral: <strong class="text-dark">{{ saldo_acumulado | currency }}</strong>
             </div>
-          </div>
-          <div class="mt-3 small text-muted">
-            Contribuidores fiéis
           </div>
         </div>
-      </div>
+      </a>
     </div>
     {% endif %}
 
-    <!-- Eventos -->
+    <!-- Card 4: Próximos Eventos & Cultos -->
     <div class="{% if current_user.is_admin %}col-sm-6 col-xl-3{% else %}col-sm-6 col-xl-6{% endif %}">
       <a href="{{ url_for('event.listar_eventos') }}" class="text-decoration-none">
         <div class="card dashboard-card card-info h-100">
@@ -97,14 +187,18 @@
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <h6>Eventos Programados</h6>
-                <h3 class="text-info">{{ total_eventos }}</h3>
+                <h3 class="text-info">{{ total_eventos_programados }}</h3>
               </div>
               <div class="dashboard-icon bg-info bg-opacity-10 text-info">
                 <i class="bi bi-calendar-event fs-4"></i>
               </div>
             </div>
-            <div class="mt-3 small text-muted">
-              <i class="bi bi-arrow-right me-1"></i> Calendário ministerial
+            <div class="mt-3 small text-muted text-truncate" title="{% if proximos_eventos %}{{ proximos_eventos[0].titulo }}{% else %}Agenda pastoral{% endif %}">
+              {% if proximos_eventos %}
+                <i class="bi bi-clock me-1"></i> Próximo: <strong>{{ proximos_eventos[0].titulo }}</strong>
+              {% else %}
+                <i class="bi bi-arrow-right me-1"></i> Ver agenda oficial
+              {% endif %}
             </div>
           </div>
         </div>
@@ -112,66 +206,84 @@
     </div>
   </div>
 
-  <!-- Segunda Linha: Movimentação Financeira e Aniversariantes -->
+  <!-- Linha 2: Operação da Semana (Escala de Obreiros) & Cuidado Pastoral (Aniversariantes) -->
   <div class="row g-4 mb-4">
-    {% if current_user.is_admin %}
-    <!-- Finanças do Mês Corrente (Apenas Administrador) -->
-    <div class="col-lg-6">
+    <!-- Escala de Obreiros & Próximos Cultos -->
+    <div class="col-lg-7">
       <div class="card shadow-sm h-100">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="fw-bold"><i class="bi bi-wallet2 text-primary me-2"></i> Fluxo do Mês ({{ mes_nome }})</span>
-          <a href="{{ url_for('financeiro.financeiro') }}" class="btn btn-sm btn-outline-primary">
-            Ver Financeiro <i class="bi bi-chevron-right"></i>
-          </a>
+        <div class="card-header d-flex justify-content-between align-items-center py-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-clipboard-check text-primary fs-5"></i>
+            <strong class="text-dark">Escala de Obreiros & Cultos</strong>
+          </div>
+          {% if has_permission('escalas', 'view') %}
+            <a href="{{ url_for('escala.listar_escalas') }}" class="btn btn-sm btn-outline-primary">
+              Ver Painel Completo <i class="bi bi-chevron-right"></i>
+            </a>
+          {% endif %}
         </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <!-- Entradas -->
-            <div class="col-sm-6">
-              <div class="card dashboard-card card-success p-3">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="dashboard-icon bg-success bg-opacity-10 text-success mb-0">
-                    <i class="bi bi-graph-up-arrow fs-4"></i>
+        <div class="card-body p-3">
+          {% if proximas_escalas %}
+            <div class="d-flex flex-column gap-3">
+              {% for esc in proximas_escalas %}
+                <div class="p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge {{ esc.status_badge_class }}">{{ esc.status_display }}</span>
+                      <small class="text-primary fw-semibold"><i class="bi bi-calendar3 me-1"></i>{{ esc.data.strftime('%d/%m/%Y') }}</small>
+                      <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ esc.hora_inicio }}</small>
+                      {% if esc.local %}<small class="text-secondary"><i class="bi bi-geo-alt me-1"></i>{{ esc.local }}</small>{% endif %}
+                    </div>
+                    <h6 class="fw-bold mb-2 text-dark">{{ esc.titulo }}</h6>
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="small text-muted">
+                        <i class="bi bi-people me-1"></i>{{ esc.total_escalados }} voluntário(s) &bull; 
+                        <span class="text-success fw-medium">{{ esc.total_confirmados }} confirmados</span>
+                        {% if esc.total_pendentes > 0 %}
+                          &bull; <span class="text-warning fw-medium">{{ esc.total_pendentes }} pendente(s)</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                    {% if esc.total_escalados > 0 %}
+                    <div class="escala-progress mt-2" style="max-width: 320px;">
+                      <div class="escala-progress-bar" style="width: {{ (esc.total_confirmados / esc.total_escalados * 100) | round }}%;"></div>
+                    </div>
+                    {% endif %}
                   </div>
-                  <div>
-                    <h6>Entradas</h6>
-                    <h4 class="text-success mb-0 fw-bold">{{ total_entradas | currency }}</h4>
-                  </div>
+                  {% if has_permission('escalas', 'view') %}
+                    <a href="{{ url_for('escala.ver_escala', id=esc.id) }}" class="btn btn-sm btn-primary flex-shrink-0">
+                      Abrir Escala
+                    </a>
+                  {% endif %}
                 </div>
-              </div>
+              {% endfor %}
             </div>
-            <!-- Saídas -->
-            <div class="col-sm-6">
-              <div class="card dashboard-card card-danger p-3">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="dashboard-icon bg-danger bg-opacity-10 text-danger mb-0">
-                    <i class="bi bi-graph-down-arrow fs-4"></i>
-                  </div>
-                  <div>
-                    <h6>Saídas</h6>
-                    <h4 class="text-danger mb-0 fw-bold">{{ total_saidas | currency }}</h4>
-                  </div>
-                </div>
+          {% else %}
+            <div class="sigi-empty-state py-4 text-center">
+              <div class="sigi-empty-icon mb-2" style="width:52px;height:52px;font-size:1.4rem;">
+                <i class="bi bi-calendar-check text-muted"></i>
               </div>
+              <div class="sigi-empty-title fs-6">Nenhuma escala programada para os próximos dias</div>
+              <div class="sigi-empty-text small text-muted mb-3">Organize e publique escalas para os próximos cultos e eventos.</div>
+              {% if has_permission('escalas', 'create') %}
+                <a href="{{ url_for('escala.nova_escala') }}" class="btn btn-sm btn-primary">
+                  <i class="bi bi-plus-circle me-1"></i> Criar Nova Escala
+                </a>
+              {% endif %}
             </div>
-          </div>
-          <!-- Saldo Estimado -->
-          <div class="mt-3 p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
-            <span class="text-muted fw-semibold">Saldo Operacional do Mês</span>
-            <span class="fs-5 fw-bold {% if (total_entradas - total_saidas) >= 0 %}text-success{% else %}text-danger{% endif %}">
-              {{ (total_entradas - total_saidas) | currency }}
-            </span>
-          </div>
+          {% endif %}
         </div>
       </div>
     </div>
-    {% endif %}
 
-    <!-- Aniversariantes do Mês -->
-    <div class="{% if current_user.is_admin %}col-lg-6{% else %}col-12{% endif %}">
+    <!-- Próximos Aniversariantes & Cuidado Pastoral -->
+    <div class="col-lg-5">
       <div class="card shadow-sm h-100">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="fw-bold"><i class="bi bi-gift text-warning me-2"></i> Próximos Aniversariantes</span>
+        <div class="card-header d-flex justify-content-between align-items-center py-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-gift text-warning fs-5"></i>
+            <strong class="text-dark">Próximos Aniversariantes</strong>
+          </div>
           <a href="{{ url_for('member.aniversariantes_mes') }}" class="btn btn-sm btn-outline-primary">
             Ver Todos <i class="bi bi-chevron-right"></i>
           </a>
@@ -193,16 +305,24 @@
                     <div class="small text-muted">{{ aniversariante.funcao or "Membro" }}</div>
                   </div>
                 </div>
-                <span class="badge bg-warning">
-                  🎂 {{ aniversariante.data_nascimento.strftime('%d/%m') }}
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge {% if aniversariante in aniversariantes_hoje %}bg-danger animate-pulse{% else %}bg-warning text-dark{% endif %}">
+                    🎂 {{ aniversariante.data_nascimento.strftime('%d/%m') }}
+                  </span>
+                  {% if aniversariante.telefone %}
+                    {% set clean_phone = aniversariante.telefone | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') | replace('+', '') %}
+                    <a href="https://wa.me/55{{ clean_phone }}" target="_blank" class="btn-whatsapp" title="Felicitar pelo WhatsApp">
+                      <i class="bi bi-whatsapp"></i>
+                    </a>
+                  {% endif %}
+                </div>
               </li>
             {% else %}
-              <div class="sigi-empty-state py-4">
+              <div class="sigi-empty-state py-4 text-center">
                 <div class="sigi-empty-icon mb-2" style="width:48px;height:48px;font-size:1.3rem;">
                   <i class="bi bi-gift text-muted"></i>
                 </div>
-                <div class="sigi-empty-title fs-6">Nenhum aniversariante encontrado</div>
+                <div class="sigi-empty-title fs-6">Nenhum aniversariante próximo</div>
                 <div class="sigi-empty-text small mb-0">Cadastre a data de nascimento dos membros para vê-los aqui.</div>
               </div>
             {% endfor %}
@@ -213,16 +333,118 @@
   </div>
 
   {% if current_user.is_admin %}
-  <!-- Crescimento da Igreja com Navegação por Ano (Apenas Administrador) -->
+  <!-- Linha 3: Saúde Financeira & Histórico Semestral (Apenas Administrador) -->
   <div class="row g-4 mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <!-- Painel de Movimentação do Mês -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center py-3">
           <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-bezier2 text-primary fs-5"></i>
-            <h5 class="mb-0 fw-bold">Crescimento Natural da Igreja</h5>
+            <i class="bi bi-wallet2 text-primary fs-5"></i>
+            <strong class="text-dark">Fluxo do Mês ({{ mes_nome }})</strong>
           </div>
-          <!-- Seletor de Ano Estilizado -->
+          <a href="{{ url_for('financeiro.financeiro') }}" class="btn btn-sm btn-outline-primary">
+            Painel Geral <i class="bi bi-chevron-right"></i>
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <div class="card dashboard-card card-success p-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="dashboard-icon bg-success bg-opacity-10 text-success mb-0">
+                    <i class="bi bi-arrow-down-left-circle fs-4"></i>
+                  </div>
+                  <div>
+                    <h6>Entradas</h6>
+                    <h5 class="text-success mb-0 fw-bold">{{ total_entradas | currency }}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="card dashboard-card card-danger p-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="dashboard-icon bg-danger bg-opacity-10 text-danger mb-0">
+                    <i class="bi bi-arrow-up-right-circle fs-4"></i>
+                  </div>
+                  <div>
+                    <h6>Saídas</h6>
+                    <h5 class="text-danger mb-0 fw-bold">{{ total_saidas | currency }}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saldos -->
+          <div class="mt-3 p-3 bg-light rounded-3 d-flex justify-content-between align-items-center border">
+            <span class="text-muted fw-semibold">Saldo Operacional do Mês</span>
+            <span class="fs-5 fw-bold {% if saldo_operacional >= 0 %}text-success{% else %}text-danger{% endif %}">
+              {{ saldo_operacional | currency }}
+            </span>
+          </div>
+
+          <div class="mt-2 p-3 bg-white rounded-3 d-flex justify-content-between align-items-center border">
+            <span class="text-muted fw-semibold"><i class="bi bi-bank me-1 text-primary"></i> Saldo Consolidado em Caixa</span>
+            <span class="fs-5 fw-bold text-dark">
+              {{ saldo_acumulado | currency }}
+            </span>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <a href="{{ url_for('financeiro.balancete_mensal') }}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-file-earmark-spreadsheet me-1"></i> Balancete Oficial
+            </a>
+            <a href="{{ url_for('financeiro.dizimos') }}" class="btn btn-sm btn-outline-warning text-dark">
+              <i class="bi bi-heart-pulse me-1"></i> Dízimos & Ofertas
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de Histórico Semestral -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center py-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-bar-chart text-success fs-5"></i>
+            <strong class="text-dark">Histórico Financeiro (Últimos 6 Meses)</strong>
+          </div>
+          <a href="{{ url_for('financeiro.relatorios') }}" class="btn btn-sm btn-outline-primary">
+            Relatório Detalhado <i class="bi bi-chevron-right"></i>
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="chart-container" style="min-height: 250px;">
+            {% if has_financeiro_data %}
+              <canvas id="financeiroChart"></canvas>
+            {% else %}
+              <div class="sigi-empty-state py-4 text-center">
+                <div class="sigi-empty-icon mb-2">
+                  <i class="bi bi-cash-stack text-muted"></i>
+                </div>
+                <div class="sigi-empty-title fs-6">Sem histórico registrado</div>
+                <div class="sigi-empty-text small text-muted">Registre entradas e saídas para habilitar o gráfico comparativo.</div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Linha 4: Crescimento Natural & Distribuição por Batismo (Apenas Administrador) -->
+  <div class="row g-4 mb-4">
+    <!-- Crescimento Natural -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-graph-up text-primary fs-5"></i>
+            <strong class="text-dark">Crescimento Natural da Igreja</strong>
+          </div>
           <div class="year-navigator-pill">
             <a href="#" class="year-menos" title="Ano anterior">
               <i class="bi bi-chevron-left"></i>
@@ -234,16 +456,13 @@
           </div>
         </div>
         <div class="card-body">
-          <div class="row g-4 align-items-center">
-            <!-- Gráfico de Linha -->
-            <div class="col-lg-8">
-              <div class="chart-container">
+          <div class="row g-3 align-items-center">
+            <div class="col-md-7">
+              <div class="chart-container" style="min-height: 240px;">
                 <canvas id="crescimentoChart"></canvas>
               </div>
             </div>
-
-            <!-- Indicadores Laterais (Resumo da Movimentação Anual) -->
-            <div class="col-lg-4">
+            <div class="col-md-5">
               <div class="p-3 bg-light rounded-3 border">
                 <div class="small text-muted text-uppercase fw-bold mb-3">Resumo da Movimentação Anual</div>
                 <div class="d-flex justify-content-between mb-2">
@@ -273,113 +492,37 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Gráficos de Distribuição e Histórico Semestral (Apenas Administrador) -->
-  <div class="row g-4 mb-4">
-    <!-- Distribuição por Status de Membros (Ativos, Transferidos, Inativos) -->
-    <div class="col-lg-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <div>
-            <i class="bi bi-pie-chart-fill text-primary me-2"></i>
-            <strong>Situação dos Membros</strong>
-          </div>
-          <span class="badge bg-light text-secondary border">
-            {{ total_membros + total_transferidos + total_inativos }} Cadastros
-          </span>
-        </div>
-        <div class="card-body">
-          <div class="chart-container" style="max-height: 230px; position: relative;">
-            <canvas id="statusMembrosChart"></canvas>
-          </div>
-          <!-- Resumo em cards / badges -->
-          <div class="row g-2 mt-3 text-center">
-            <div class="col-4">
-              <div class="p-2 rounded bg-success bg-opacity-10 border border-success border-opacity-25">
-                <div class="text-success small fw-bold"><i class="bi bi-person-check me-1"></i>Ativos</div>
-                <div class="fs-5 fw-bold text-success">{{ total_membros }}</div>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="p-2 rounded bg-secondary bg-opacity-10 border border-secondary border-opacity-25">
-                <div class="text-secondary small fw-bold"><i class="bi bi-arrow-left-right me-1"></i>Transferidos</div>
-                <div class="fs-5 fw-bold text-secondary">{{ total_transferidos }}</div>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="p-2 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25">
-                <div class="text-danger small fw-bold"><i class="bi bi-person-dash me-1"></i>Inativos</div>
-                <div class="fs-5 fw-bold text-danger">{{ total_inativos }}</div>
-              </div>
-            </div>
-          </div>
-          <div class="text-muted small text-center mt-2">
-            <i class="bi bi-info-circle text-primary me-1"></i> Membros transferidos e inativos não são contabilizados no total de ativos da igreja.
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Distribuição por Batismo (Membros Ativos) -->
-    <div class="col-lg-6">
+    <div class="col-lg-4">
       <div class="card shadow-sm h-100">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <div>
-            <i class="bi bi-check2-circle text-success me-2"></i>
-            <strong>Batismo (Membros Ativos)</strong>
+        <div class="card-header d-flex justify-content-between align-items-center py-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-pie-chart text-success fs-5"></i>
+            <strong class="text-dark">Distribuição por Batismo</strong>
           </div>
-          <span class="badge bg-light text-secondary border">
-            {{ total_membros }} Ativos
-          </span>
+          <span class="badge bg-light text-secondary border">{{ total_membros }} Ativos</span>
         </div>
-        <div class="card-body">
-          <div class="chart-container" style="max-height: 230px; position: relative;">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div class="chart-container" style="min-height: 200px; max-height: 220px; position: relative;">
             <canvas id="membrosChart"></canvas>
           </div>
-          <!-- Resumo em badges -->
           <div class="row g-2 mt-3 text-center">
             <div class="col-6">
               <div class="p-2 rounded bg-primary bg-opacity-10 border border-primary border-opacity-25">
-                <div class="text-primary small fw-bold"><i class="bi bi-check-circle me-1"></i>Batizados</div>
+                <div class="text-primary small fw-semibold"><i class="bi bi-check-circle me-1"></i>Batizados</div>
                 <div class="fs-5 fw-bold text-primary">{{ total_batizados }}</div>
               </div>
             </div>
             <div class="col-6">
-              <div class="p-2 rounded bg-secondary bg-opacity-10 border border-secondary border-opacity-25">
-                <div class="text-secondary small fw-bold"><i class="bi bi-x-circle me-1"></i>Não Batizados</div>
-                <div class="fs-5 fw-bold text-secondary">{{ [total_membros - total_batizados, 0] | max }}</div>
+              <div class="p-2 rounded bg-warning bg-opacity-10 border border-warning border-opacity-25">
+                <div class="text-warning small fw-semibold"><i class="bi bi-person-exclamation me-1"></i>Não Batizados</div>
+                <div class="fs-5 fw-bold text-dark">{{ nao_batizados_ativos }}</div>
               </div>
             </div>
           </div>
           <div class="text-muted small text-center mt-2">
-            <i class="bi bi-info-circle text-success me-1"></i> Proporção de membros batizados em relação aos membros ativos.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Histórico Financeiro dos Últimos 6 Meses -->
-  <div class="row g-4">
-    <div class="col-12">
-      <div class="card shadow-sm h-100">
-        <div class="card-header">
-          <i class="bi bi-bar-chart text-success me-2"></i> <strong>Histórico Financeiro (Últimos 6 Meses)</strong>
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            {% if has_financeiro_data %}
-              <canvas id="financeiroChart"></canvas>
-            {% else %}
-              <div class="sigi-empty-state py-4">
-                <div class="sigi-empty-icon mb-2">
-                  <i class="bi bi-cash-stack text-muted"></i>
-                </div>
-                <div class="sigi-empty-title">Sem movimentações recentes</div>
-                <div class="sigi-empty-text">Registre entradas e saídas para gerar o histórico comparativo.</div>
-              </div>
-            {% endif %}
+            Proporção de membros batizados em relação aos membros ativos.
           </div>
         </div>
       </div>
@@ -392,61 +535,16 @@
 {% if current_user.is_admin %}
 <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
 <script>
-  // 1. Gráfico de Rosca - Situação dos Membros (Ativos, Transferidos e Inativos)
-  const ctxStatusMembros = document.getElementById('statusMembrosChart');
-  if (ctxStatusMembros) {
-    new Chart(ctxStatusMembros, {
-      type: 'doughnut',
-      data: {
-        labels: ['Ativos', 'Transferidos', 'Inativos'],
-        datasets: [{
-          data: [{{ total_membros }}, {{ total_transferidos }}, {{ total_inativos }}],
-          backgroundColor: ['#10b981', '#64748b', '#ef4444'],
-          borderWidth: 0,
-          hoverOffset: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom' }
-        },
-        cutout: '68%'
-      }
-    });
-  }
+  const isDarkInitial = (typeof window.getTheme === 'function' ? window.getTheme() : 'light') === 'dark';
+  const getGridColor = (dark) => dark ? 'rgba(255, 255, 255, 0.08)' : '#f1f5f9';
+  const getTextColor = (dark) => dark ? '#cbd5e1' : '#475569';
 
-  // 2. Gráfico de Rosca - Membros Batizados x Não Batizados
-  const ctxMembros = document.getElementById('membrosChart');
-  if (ctxMembros) {
-    new Chart(ctxMembros, {
-      type: 'doughnut',
-      data: {
-        labels: ['Batizados', 'Não Batizados'],
-        datasets: [{
-          data: [{{ total_batizados }}, {{ [total_membros - total_batizados, 0] | max }}],
-          backgroundColor: ['#2563eb', '#94a3b8'],
-          borderWidth: 0,
-          hoverOffset: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom' }
-        },
-        cutout: '68%'
-      }
-    });
-  }
-
-  // 2. Gráfico de Barras - Histórico Financeiro
+  // 1. Gráfico de Barras Horizontais - Histórico Financeiro
+  let chartFinanceiroInstance = null;
   {% if has_financeiro_data %}
   const ctxFinanceiro = document.getElementById('financeiroChart');
   if (ctxFinanceiro) {
-    new Chart(ctxFinanceiro, {
+    chartFinanceiroInstance = new Chart(ctxFinanceiro, {
       type: 'bar',
       data: {
         labels: {{ meses_labels|tojson }},
@@ -466,21 +564,81 @@
         ]
       },
       options: {
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'top' }
+          legend: {
+            position: 'top',
+            labels: { color: getTextColor(isDarkInitial) }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.x !== null && context.parsed.x !== undefined) {
+                  label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.x);
+                }
+                return label;
+              }
+            }
+          }
         },
         scales: {
-          x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
+          x: {
+            beginAtZero: true,
+            grid: { color: getGridColor(isDarkInitial) },
+            ticks: {
+              color: getTextColor(isDarkInitial),
+              callback: function(value) {
+                return 'R$ ' + Number(value).toLocaleString('pt-BR');
+              }
+            }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: getTextColor(isDarkInitial) }
+          }
         }
       }
     });
   }
   {% endif %}
 
+  // 2. Gráfico de Rosca / Pizza - Distribuição por Batismo
+  let chartMembrosInstance = null;
+  const ctxMembros = document.getElementById('membrosChart');
+  if (ctxMembros) {
+    chartMembrosInstance = new Chart(ctxMembros, {
+      type: 'doughnut',
+      data: {
+        labels: ['Batizados', 'Não Batizados'],
+        datasets: [{
+          data: [{{ total_batizados }}, {{ [total_membros - total_batizados, 0] | max }}],
+          backgroundColor: ['#2563eb', '#94a3b8'],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: getTextColor(isDarkInitial) }
+          }
+        },
+        cutout: '65%'
+      }
+    });
+  }
+
   // 3. Gráfico de Linha - Crescimento Natural com Navegador de Ano
+  let chartCrescimentoInstance = null;
   document.addEventListener("DOMContentLoaded", function() {
     const currentYearSpan = document.querySelector(".current-year");
     const btnMenos = document.querySelector(".year-menos");
@@ -497,7 +655,7 @@
     const ctx = document.getElementById('crescimentoChart');
     if (!ctx) return;
 
-    const chart = new Chart(ctx, {
+    chartCrescimentoInstance = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
@@ -530,11 +688,21 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'top' }
+          legend: {
+            position: 'top',
+            labels: { color: getTextColor(isDarkInitial) }
+          }
         },
         scales: {
-          x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
+          x: {
+            grid: { display: false },
+            ticks: { color: getTextColor(isDarkInitial) }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: getGridColor(isDarkInitial) },
+            ticks: { color: getTextColor(isDarkInitial) }
+          }
         }
       }
     });
@@ -555,9 +723,9 @@
     }
 
     function atualizarGrafico(ano) {
-      chart.data.datasets[0].data = dadosEntradasPorAno[ano] || [];
-      chart.data.datasets[1].data = dadosSaidasPorAno[ano] || [];
-      chart.update();
+      chartCrescimentoInstance.data.datasets[0].data = dadosEntradasPorAno[ano] || [];
+      chartCrescimentoInstance.data.datasets[1].data = dadosSaidasPorAno[ano] || [];
+      chartCrescimentoInstance.update();
       atualizarIndicadores(ano);
     }
 
@@ -582,6 +750,31 @@
         }
       });
     }
+
+    // Ouvinte em tempo real para alternância de tema no dashboard
+    window.addEventListener('sigi-theme-changed', function(e) {
+      const isDark = e.detail.isDark;
+      const textC = getTextColor(isDark);
+      const gridC = getGridColor(isDark);
+
+      [chartFinanceiroInstance, chartMembrosInstance, chartCrescimentoInstance].forEach(function(inst) {
+        if (!inst || !inst.options) return;
+        if (inst.options.plugins && inst.options.plugins.legend && inst.options.plugins.legend.labels) {
+          inst.options.plugins.legend.labels.color = textC;
+        }
+        if (inst.options.scales) {
+          if (inst.options.scales.x) {
+            if (inst.options.scales.x.ticks) inst.options.scales.x.ticks.color = textC;
+            if (inst.options.scales.x.grid && inst.options.scales.x.grid.display !== false) inst.options.scales.x.grid.color = gridC;
+          }
+          if (inst.options.scales.y) {
+            if (inst.options.scales.y.ticks) inst.options.scales.y.ticks.color = textC;
+            if (inst.options.scales.y.grid && inst.options.scales.y.grid.display !== false) inst.options.scales.y.grid.color = gridC;
+          }
+        }
+        inst.update();
+      });
+    });
   });
 </script>
 {% endif %}

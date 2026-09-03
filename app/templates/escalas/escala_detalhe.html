@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+{% block title %}{{ escala.titulo }} — Detalhes da Escala{% endblock %}
+{% block nav_escalas_active %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-3">
+
+  <!-- Breadcrumb & Top Navigation -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <a href="{{ url_for('escala.listar_escalas') }}" class="text-decoration-none text-muted small">
+        <i class="bi bi-arrow-left me-1"></i> Voltar para Lista de Escalas
+      </a>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <!-- Botão Copiar Link Público -->
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copiarLinkPublico('{{ link_publico }}')" title="Copiar link público para voluntários">
+        <i class="bi bi-link-45deg me-1"></i> Copiar Link Público
+      </button>
+
+      <!-- Botão WhatsApp -->
+      <a href="https://api.whatsapp.com/send?text={{ texto_whatsapp|urlencode }}" target="_blank" class="btn btn-sm btn-outline-success" title="Compartilhar no WhatsApp">
+        <i class="bi bi-whatsapp me-1"></i> WhatsApp
+      </a>
+
+      <!-- Botão Imprimir Mural -->
+      <a href="{{ url_for('escala.imprimir_escala', id=escala.id) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Imprimir versão para mural">
+        <i class="bi bi-printer me-1"></i> Imprimir Mural
+      </a>
+
+      {% if has_permission("escalas", "create") %}
+        <!-- Botão Duplicar Escala -->
+        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalDuplicar" title="Duplicar para outra data">
+          <i class="bi bi-copy me-1"></i> Duplicar Escala
+        </button>
+      {% endif %}
+
+      {% if has_permission("escalas", "edit") %}
+        <a href="{{ url_for('escala.editar_escala', id=escala.id) }}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-pencil me-1"></i> Editar
+        </a>
+      {% endif %}
+
+      {% if has_permission("escalas", "delete") %}
+        <form method="post" action="{{ url_for('escala.excluir_escala', id=escala.id) }}" class="d-inline" onsubmit="return confirm('Deseja realmente excluir esta escala inteira? Esta ação não pode ser desfeita.');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash"></i>
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Card Principal com Dados da Escala -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge {{ escala.status_badge_class }} px-3 py-1 fs-6">{{ escala.status_display }}</span>
+            {% if escala.evento %}
+              <span class="badge bg-light text-secondary border">
+                <i class="bi bi-calendar-event me-1"></i> {{ escala.evento.titulo }}
+              </span>
+            {% endif %}
+          </div>
+          <h2 class="fw-bold mb-2 text-dark">{{ escala.titulo }}</h2>
+          <div class="d-flex flex-wrap gap-4 text-muted">
+            <div>
+              <i class="bi bi-calendar3 text-primary me-1"></i>
+              <strong>{{ escala.data.strftime('%d/%m/%Y') }}</strong>
+            </div>
+            <div>
+              <i class="bi bi-clock text-primary me-1"></i>
+              <strong>{{ escala.hora_inicio }}</strong>{% if escala.hora_fim %} às <strong>{{ escala.hora_fim }}</strong>{% endif %}
+            </div>
+            <div>
+              <i class="bi bi-geo-alt text-primary me-1"></i>
+              {{ escala.local or 'Templo Principal' }}
+            </div>
+          </div>
+          {% if escala.observacoes %}
+            <div class="mt-3 p-3 bg-light rounded-3 small text-secondary border-start border-primary border-3">
+              <strong><i class="bi bi-info-circle me-1"></i> Instruções:</strong> {{ escala.observacoes|safe }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Coluna de Status e Estatísticas Rápidas -->
+        <div class="col-lg-4 mt-3 mt-lg-0 border-start ps-lg-4">
+          <div class="text-muted small fw-medium mb-1">Alterar Status da Escala:</div>
+          <form method="post" action="{{ url_for('escala.alterar_status_escala', id=escala.id) }}" class="d-flex gap-2 mb-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="rascunho" {% if escala.status == 'rascunho' %}selected{% endif %}>Rascunho</option>
+              <option value="publicada" {% if escala.status == 'publicada' %}selected{% endif %}>Publicada</option>
+              <option value="confirmada" {% if escala.status == 'confirmada' %}selected{% endif %}>Confirmada</option>
+              <option value="concluida" {% if escala.status == 'concluida' %}selected{% endif %}>Concluída</option>
+              <option value="cancelada" {% if escala.status == 'cancelada' %}selected{% endif %}>Cancelada</option>
+            </select>
+          </form>
+
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Total Escalados:</span>
+            <strong class="text-dark">{{ escala.total_escalados }}</strong>
+          </div>
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Confirmados:</span>
+            <strong class="text-success">{{ escala.total_confirmados }}</strong>
+          </div>
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Pendentes:</span>
+            <strong class="text-warning">{{ escala.total_pendentes }}</strong>
+          </div>
+          <div class="d-flex justify-content-between small text-muted">
+            <span>Recusados / Substituídos:</span>
+            <strong class="text-danger">{{ escala.total_recusados }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Ação de Inclusão de Voluntário -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-people-fill text-primary me-2"></i> Equipes & Voluntários Escalados
+    </h4>
+    {% if has_permission("escalas", "edit") %}
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAdicionarVoluntario">
+        <i class="bi bi-person-plus me-1"></i> Escalar Voluntário
+      </button>
+    {% endif %}
+  </div>
+
+  <!-- Grupos por Equipe -->
+  {% if itens_por_equipe %}
+    <div class="row g-4 mb-4">
+      {% for equipe, itens in itens_por_equipe.items() %}
+      <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center" style="border-left: 4px solid {{ equipe.cor or '#0d6efd' }} !important;">
+            <div class="d-flex align-items-center gap-2">
+              <span class="fs-5" style="color: {{ equipe.cor or '#0d6efd' }};">
+                <i class="bi {{ equipe.icone or 'bi-people' }}"></i>
+              </span>
+              <div>
+                <h5 class="fw-bold mb-0 text-dark">{{ equipe.nome }}</h5>
+                {% if equipe.lider %}
+                  <small class="text-muted">Líder: {{ equipe.lider.nome }}</small>
+                {% endif %}
+              </div>
+            </div>
+            <span class="badge bg-light text-dark border px-2 py-1">
+              {{ itens|length }} escalado(s)
+            </span>
+          </div>
+
+          <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+              {% for item in itens %}
+              <li class="list-group-item p-3 d-flex justify-content-between align-items-center gap-2">
+                <div class="d-flex align-items-center gap-3">
+                  <!-- Avatar -->
+                  {% if item.membro.foto %}
+                    <img src="{{ url_for('static', filename=item.membro.foto if item.membro.foto.startswith('uploads/') else 'uploads/' ~ item.membro.foto) }}" 
+                         alt="{{ item.membro.nome }}" class="rounded-circle" style="width: 42px; height: 42px; object-fit: cover;">
+                  {% else %}
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 42px; height: 42px;">
+                      {{ (item.membro.nome[0] if item.membro.nome else '?')|upper }}
+                    </div>
+                  {% endif %}
+
+                  <div>
+                    <div class="fw-bold text-dark">{{ item.membro.nome }}</div>
+                    <div class="small text-muted d-flex align-items-center gap-2">
+                      {% if item.funcao %}
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">
+                          {{ item.funcao.nome }}
+                        </span>
+                      {% else %}
+                        <span class="text-muted">Função Geral</span>
+                      {% endif %}
+
+                      {% if item.membro.telefone %}
+                        <span><i class="bi bi-telephone me-1"></i>{{ item.membro.telefone }}</span>
+                      {% endif %}
+                    </div>
+
+                    <!-- Histórico de Substituição -->
+                    {% if item.membro_original %}
+                      <div class="small text-info mt-1">
+                        <i class="bi bi-arrow-left-right me-1"></i>
+                        Substituiu: <strong>{{ item.membro_original.nome }}</strong>
+                        {% if item.motivo_substituicao %}({{ item.motivo_substituicao }}){% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% if item.observacao %}
+                      <div class="small text-muted fst-italic mt-1">
+                        <i class="bi bi-chat-left-text me-1"></i> {{ item.observacao }}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Ações e Status do Voluntário -->
+                <div class="d-flex align-items-center gap-2">
+                  <!-- Badge com Dropdown para alterar presença -->
+                  <div class="dropdown">
+                    <button class="btn btn-sm {{ item.status_badge_class }} dropdown-toggle shadow-none" type="button" data-bs-toggle="dropdown">
+                      {{ item.status_display }}
+                    </button>
+                    {% if has_permission("escalas", "edit") %}
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                      <li>
+                        <form method="post" action="{{ url_for('escala.alterar_status_item', item_id=item.id) }}">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <input type="hidden" name="status" value="confirmado">
+                          <button type="submit" class="dropdown-item text-success"><i class="bi bi-check-circle me-2"></i> Confirmar Presença</button>
+                        </form>
+                      </li>
+                      <li>
+                        <form method="post" action="{{ url_for('escala.alterar_status_item', item_id=item.id) }}">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <input type="hidden" name="status" value="pendente">
+                          <button type="submit" class="dropdown-item text-warning"><i class="bi bi-clock me-2"></i> Marcar Pendente</button>
+                        </form>
+                      </li>
+                      <li>
+                        <form method="post" action="{{ url_for('escala.alterar_status_item', item_id=item.id) }}">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <input type="hidden" name="status" value="recusado">
+                          <button type="submit" class="dropdown-item text-danger"><i class="bi bi-x-circle me-2"></i> Informar Ausência</button>
+                        </form>
+                      </li>
+                    </ul>
+                    {% endif %}
+                  </div>
+
+                  <!-- Botão de Substituir -->
+                  {% if has_permission("escalas", "gerenciar") %}
+                  <button type="button" class="btn btn-sm btn-outline-info" 
+                          onclick="abrirModalSubstituir({{ item.id }}, '{{ item.membro.nome }}', {{ item.equipe_id }})" 
+                          title="Substituir Voluntário">
+                    <i class="bi bi-arrow-left-right"></i>
+                  </button>
+                  {% endif %}
+
+                  <!-- Botão de Remover -->
+                  {% if has_permission("escalas", "edit") %}
+                  <form method="post" action="{{ url_for('escala.remover_item', item_id=item.id) }}" class="d-inline" onsubmit="return confirm('Remover {{ item.membro.nome }} desta escala?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover da Escala">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body text-center py-5">
+        <i class="bi bi-people text-muted fs-1 d-block mb-2"></i>
+        <h5 class="fw-bold text-dark mb-1">Nenhum voluntário escalado ainda</h5>
+        <p class="text-muted small mb-3">Comece adicionando equipes e voluntários que atuarão nesta data.</p>
+        {% if has_permission("escalas", "edit") %}
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAdicionarVoluntario">
+            <i class="bi bi-person-plus me-1"></i> Escalar Primeiro Voluntário
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- ======================================================================== -->
+<!-- MODAL: ESCALAR VOLUNTÁRIO COM VALIDAÇÃO DE CONFLITOS EM TEMPO REAL       -->
+<!-- ======================================================================== -->
+<div class="modal fade" id="modalAdicionarVoluntario" tabindex="-1" aria-labelledby="modalAdicionarVoluntarioLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="modalAdicionarVoluntarioLabel">
+          <i class="bi bi-person-plus me-2"></i> Escalar Voluntário
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <form method="post" action="{{ url_for('escala.adicionar_item', id=escala.id) }}">
+        <div class="modal-body p-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- Seleção da Equipe -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Equipe / Ministério <span class="text-danger">*</span></label>
+            <select name="equipe_id" id="modalEquipeSelect" class="form-select" required onchange="carregarDadosEquipe(this.value)">
+              <option value="">-- Selecione a Equipe --</option>
+              {% for eq in equipes_ativas %}
+                <option value="{{ eq.id }}">{{ eq.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Seleção da Função (preenchida dinamicamente) -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Função / Papel</label>
+            <select name="funcao_id" id="modalFuncaoSelect" class="form-select">
+              <option value="0">-- Função Geral / Nenhuma --</option>
+            </select>
+          </div>
+
+          <!-- Seleção do Voluntário -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Voluntário (Membro) <span class="text-danger">*</span></label>
+            <select name="membro_id" id="modalMembroSelect" class="form-select" required onchange="checarConflitoTempoReal()">
+              <option value="">-- Selecione o Voluntário --</option>
+              {% for m in form_voluntario.membro_id.choices %}
+                <option value="{{ m[0] }}">{{ m[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Alerta de Conflito em Tempo Real -->
+          <div id="alertaConflito" class="d-none alert alert-danger py-2 px-3 small mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="textoConflito"></span>
+          </div>
+
+          <!-- Aviso de Frequência / Balanceamento -->
+          <div id="alertaAviso" class="d-none alert alert-warning py-2 px-3 small mb-3">
+            <i class="bi bi-info-circle-fill me-1"></i> <span id="textoAviso"></span>
+          </div>
+
+          <!-- Observação -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Observação Específica</label>
+            <input type="text" name="observacao" class="form-control" placeholder="Ex: Trazer violão afinado, chegar às 17h30">
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" id="btnSalvarEscalado" class="btn btn-primary px-4">
+            <i class="bi bi-check2 me-1"></i> Confirmar Inclusão
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================== -->
+<!-- MODAL: SUBSTITUIR VOLUNTÁRIO COM PRESERVAÇÃO DE HISTÓRICO                -->
+<!-- ======================================================================== -->
+<div class="modal fade" id="modalSubstituirVoluntario" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-info text-dark">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-arrow-left-right me-2"></i> Substituir Voluntário
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <form method="post" id="formSubstituir" action="">
+        <div class="modal-body p-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <p class="text-muted small">
+            Substituindo voluntário: <strong id="substituirNomeOriginal" class="text-dark"></strong>.
+            O nome original será mantido no histórico para transparência da gestão.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Novo Voluntário Substituto <span class="text-danger">*</span></label>
+            <select name="novo_membro_id" class="form-select" required>
+              <option value="">-- Selecione o Substituto --</option>
+              {% for m in form_substituir.novo_membro_id.choices %}
+                <option value="{{ m[0] }}">{{ m[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Motivo da Substituição <span class="text-danger">*</span></label>
+            <input type="text" name="motivo" class="form-control" required placeholder="Ex: Viagem de trabalho, Imprevisto de saúde, etc.">
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-info px-4">
+            <i class="bi bi-arrow-left-right me-1"></i> Efetivar Substituição
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================== -->
+<!-- MODAL: DUPLICAR ESCALA                                                  -->
+<!-- ======================================================================== -->
+<div class="modal fade" id="modalDuplicar" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-copy me-2"></i> Duplicar Escala
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <form method="post" action="{{ url_for('escala.duplicar_escala', id=escala.id) }}">
+        <div class="modal-body p-4">
+          {{ form_duplicar.hidden_tag() }}
+
+          <p class="text-muted small">
+            Todas as equipes e pessoas escaladas serão copiadas para a nova data com status resetado para <strong>Rascunho</strong> e <strong>Pendente</strong>.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Título para a Nova Escala</label>
+            {{ form_duplicar.novo_titulo(class="form-control") }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nova Data <span class="text-danger">*</span></label>
+            {{ form_duplicar.nova_data(class="form-control", type="date") }}
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label fw-semibold">Horário Início</label>
+              {{ form_duplicar.nova_hora_inicio(class="form-control") }}
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Horário Término</label>
+              {{ form_duplicar.nova_hora_fim(class="form-control") }}
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check2-circle me-1"></i> Duplicar Escala
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts Dinâmicos da Página -->
+<script>
+function copiarLinkPublico(link) {
+  navigator.clipboard.writeText(link).then(function() {
+    alert("Link público copiado para a área de transferência!");
+  }).catch(function() {
+    prompt("Copie o link abaixo:", link);
+  });
+}
+
+function abrirModalSubstituir(itemId, nomeMembro, equipeId) {
+  document.getElementById("substituirNomeOriginal").innerText = nomeMembro;
+  document.getElementById("formSubstituir").action = "/escalas/item/" + itemId + "/substituir";
+  var modal = new bootstrap.Modal(document.getElementById("modalSubstituirVoluntario"));
+  modal.show();
+}
+
+function carregarDadosEquipe(equipeId) {
+  if (!equipeId) return;
+
+  fetch("/escalas/api/equipe/" + equipeId + "/dados")
+    .then(response => response.json())
+    .then(data => {
+      // Atualiza funções
+      var selectFuncao = document.getElementById("modalFuncaoSelect");
+      selectFuncao.innerHTML = '<option value="0">-- Função Geral / Nenhuma --</option>';
+      data.funcoes.forEach(function(f) {
+        var opt = document.createElement("option");
+        opt.value = f.id;
+        opt.innerText = f.nome;
+        selectFuncao.appendChild(opt);
+      });
+    })
+    .catch(err => console.error("Erro ao carregar dados da equipe:", err));
+}
+
+function checarConflitoTempoReal() {
+  var membroId = document.getElementById("modalMembroSelect").value;
+  var alertaConflito = document.getElementById("alertaConflito");
+  var textoConflito = document.getElementById("textoConflito");
+  var alertaAviso = document.getElementById("alertaAviso");
+  var textoAviso = document.getElementById("textoAviso");
+  var btnSalvar = document.getElementById("btnSalvarEscalado");
+
+  if (!membroId) {
+    alertaConflito.classList.add("d-none");
+    alertaAviso.classList.add("d-none");
+    btnSalvar.disabled = false;
+    return;
+  }
+
+  fetch("/escalas/api/verificar-conflito", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token() }}"
+    },
+    body: JSON.stringify({
+      membro_id: membroId,
+      data: "{{ escala.data.strftime('%Y-%m-%d') }}",
+      hora_inicio: "{{ escala.hora_inicio }}",
+      hora_fim: "{{ escala.hora_fim or '' }}",
+      escala_id: {{ escala.id }}
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.possui_conflito) {
+      textoConflito.innerText = data.conflitos.join(" ");
+      alertaConflito.classList.remove("d-none");
+      btnSalvar.disabled = true;
+    } else {
+      alertaConflito.classList.add("d-none");
+      btnSalvar.disabled = false;
+    }
+
+    if (data.avisos && data.avisos.length > 0) {
+      textoAviso.innerText = data.avisos.join(" ");
+      alertaAviso.classList.remove("d-none");
+    } else {
+      alertaAviso.classList.add("d-none");
+    }
+  })
+  .catch(err => console.error("Erro na verificação de conflitos:", err));
+}
+</script>
+{% endblock %}

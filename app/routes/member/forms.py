@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, SelectField, TextAreaField, DateField, SubmitField
+from wtforms import StringField, SelectField, TextAreaField, DateField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Optional, Email
 from datetime import date
 
@@ -23,8 +23,9 @@ class MemberForm(FlaskForm):
     ], validators=[Optional()])
     conjuge = StringField("Nome do Cônjuge", validators=[Optional()])
 
-    telefone = StringField("Telefone", validators=[Optional()])
-    email = StringField("Email", validators=[Optional(), Email()])
+    telefone = StringField("Telefone", validators=[DataRequired(message="O campo Telefone é obrigatório.")])
+    is_whatsapp = BooleanField("É WhatsApp?", default=False)
+    email = StringField("Email", validators=[DataRequired(message="O campo Email é obrigatório."), Email(message="Informe um e-mail válido.")])
     endereco = StringField("Endereço", validators=[Optional()])
     bairro = StringField("Bairro", validators=[Optional()])
     cep = StringField("CEP", validators=[Optional()])

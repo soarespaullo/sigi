@@ -71,6 +71,13 @@ class PermissoesForm(FlaskForm):
     ebd_delete = BooleanField("Excluir EBD / Classes")
     ebd_frequencia = BooleanField("Lançar / Alterar Frequência")
 
+    # Escalas de Obreiros e Voluntários
+    escalas_view = BooleanField("Visualizar Escalas")
+    escalas_create = BooleanField("Criar Escalas")
+    escalas_edit = BooleanField("Editar Escalas")
+    escalas_delete = BooleanField("Excluir / Cancelar Escalas")
+    escalas_gerenciar = BooleanField("Gerenciar Equipes, Funções & Substituições")
+
     # Perfil
     perfil_view = BooleanField("Visualizar Perfil")
     perfil_password = BooleanField("Alterar Senha")

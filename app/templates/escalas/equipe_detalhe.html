@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% block title %}{{ equipe.nome }} — Detalhes da Equipe{% endblock %}
+{% block nav_escalas_active %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-3">
+
+  <!-- Breadcrumb -->
+  <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <a href="{{ url_for('escala.listar_equipes') }}" class="text-decoration-none text-muted small">
+      <i class="bi bi-arrow-left me-1"></i> Voltar para Lista de Equipes
+    </a>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalEditarEquipe">
+        <i class="bi bi-pencil me-1"></i> Editar Dados da Equipe
+      </button>
+    </div>
+  </div>
+
+  <!-- Header Card da Equipe -->
+  <div class="card shadow-sm border-0 mb-4" style="border-left: 5px solid {{ equipe.cor or '#0d6efd' }} !important;">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-3 rounded-circle text-white fs-3 d-flex align-items-center justify-content-center" style="background-color: {{ equipe.cor or '#0d6efd' }}; width: 64px; height: 64px;">
+            <i class="bi {{ equipe.icone or 'bi-people' }}"></i>
+          </div>
+          <div>
+            <h3 class="fw-bold mb-1 text-dark">{{ equipe.nome }}</h3>
+            <div class="text-muted small">
+              Líder Responsável: <strong>{{ equipe.lider.nome if equipe.lider else 'Não definido' }}</strong> &bull; 
+              Status: <span class="badge {% if equipe.ativo %}bg-success{% else %}bg-secondary{% endif %}">{% if equipe.ativo %}Ativa{% else %}Inativa{% endif %}</span>
+            </div>
+            {% if equipe.descricao %}
+              <div class="text-muted small mt-2 mb-0">{{ equipe.descricao|safe }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="d-flex gap-4 text-center">
+          <div class="px-3 py-2 bg-light rounded-3">
+            <div class="text-muted small">Funções</div>
+            <h4 class="fw-bold mb-0 text-dark">{{ equipe.funcoes|length }}</h4>
+          </div>
+          <div class="px-3 py-2 bg-light rounded-3">
+            <div class="text-muted small">Voluntários</div>
+            <h4 class="fw-bold mb-0 text-primary">{{ equipe.total_voluntarios }}</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- COLUNA 1: FUNÇÕES / PAPÉIS DA EQUIPE -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-tag text-primary me-2"></i> Funções & Papéis
+          </h5>
+          <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovaFuncao">
+            <i class="bi bi-plus-circle me-1"></i> Nova Função
+          </button>
+        </div>
+
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for func in equipe.funcoes %}
+            <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-dark">{{ func.nome }}</div>
+                {% if func.descricao %}
+                  <small class="text-muted">{{ func.descricao }}</small>
+                {% endif %}
+              </div>
+              <form method="post" action="{{ url_for('escala.equipe_excluir_funcao', id=equipe.id, funcao_id=func.id) }}" onsubmit="return confirm('Deseja excluir a função {{ func.nome }}?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir Função">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </li>
+            {% else %}
+            <li class="list-group-item text-center py-4 text-muted">
+              Nenhuma função cadastrada ainda (ex: Vocal, Violão, Operador de Som).
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUNA 2: QUADRO DE MEMBROS VOLUNTÁRIOS -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-people-fill text-primary me-2"></i> Quadro de Voluntários da Equipe
+          </h5>
+          {% if membros_disponiveis %}
+          <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAdicionarMembro">
+            <i class="bi bi-person-plus me-1"></i> Adicionar Voluntário
+          </button>
+          {% endif %}
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0 table-hover">
+              <thead class="table-light small">
+                <tr>
+                  <th class="ps-3">Membro</th>
+                  <th>Função Principal</th>
+                  <th>Ingresso</th>
+                  <th class="text-end pe-3">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for em in equipe.membros %}
+                <tr>
+                  <td class="ps-3">
+                    <div class="d-flex align-items-center gap-2">
+                      {% if em.membro.foto %}
+                        <img src="{{ url_for('static', filename=em.membro.foto if em.membro.foto.startswith('uploads/') else 'uploads/' ~ em.membro.foto) }}" 
+                             alt="{{ em.membro.nome }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                      {% else %}
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold small" style="width: 32px; height: 32px;">
+                          {{ em.membro.nome[0]|upper }}
+                        </div>
+                      {% endif %}
+                      <div>
+                        <div class="fw-semibold text-dark">{{ em.membro.nome }}</div>
+                        <small class="text-muted">{{ em.membro.telefone or 'Sem telefone' }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    {% if em.funcao_padrao %}
+                      <span class="badge bg-light text-dark border">{{ em.funcao_padrao.nome }}</span>
+                    {% else %}
+                      <span class="text-muted small">Geral</span>
+                    {% endif %}
+                  </td>
+                  <td class="small text-muted">
+                    {{ em.data_ingresso.strftime('%d/%m/%Y') if em.data_ingresso else '-' }}
+                  </td>
+                  <td class="text-end pe-3">
+                    <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#modalEditarMembro{{ em.id }}" title="Editar Função do Voluntário">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <form method="post" action="{{ url_for('escala.equipe_remover_membro', id=equipe.id, membro_id=em.membro_id) }}" onsubmit="return confirm('Remover {{ em.membro.nome }} desta equipe?');" class="d-inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover da equipe">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </form>
+
+                    <!-- Modal: Editar Função do Voluntário -->
+                    <div class="modal fade text-start" id="modalEditarMembro{{ em.id }}" tabindex="-1" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                          <div class="modal-header bg-primary text-white">
+                            <h6 class="modal-title fw-bold"><i class="bi bi-pencil me-1"></i> Editar Função de {{ em.membro.nome }}</h6>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                          </div>
+                          <form method="post" action="{{ url_for('escala.equipe_editar_membro', id=equipe.id, membro_id=em.membro_id) }}">
+                            <div class="modal-body p-3">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <div class="mb-3">
+                                <label class="form-label fw-semibold">Função Principal na Equipe</label>
+                                <select name="funcao_padrao_id" class="form-select">
+                                  <option value="0" {% if not em.funcao_padrao_id %}selected{% endif %}>-- Nenhuma / Função Geral --</option>
+                                  {% for f in equipe.funcoes %}
+                                    <option value="{{ f.id }}" {% if em.funcao_padrao_id == f.id %}selected{% endif %}>{{ f.nome }}</option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                            </div>
+                            <div class="modal-footer bg-light p-2">
+                              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                              <button type="submit" class="btn btn-sm btn-primary">Salvar Alteração</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-muted">
+                    Nenhum voluntário vinculado a esta equipe ainda.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: Nova Função -->
+<div class="modal fade" id="modalNovaFuncao" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-1"></i> Nova Função para {{ equipe.nome }}</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{{ url_for('escala.equipe_adicionar_funcao', id=equipe.id) }}">
+        <div class="modal-body p-3">
+          {{ form_funcao.hidden_tag() }}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nome da Função <span class="text-danger">*</span></label>
+            {{ form_funcao.nome(class="form-control", placeholder="Ex: Teclado, Bateria, Som, Recepção") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Descrição / Atribuições</label>
+            {{ form_funcao.descricao(class="form-control", placeholder="Breve resumo da responsabilidade") }}
+          </div>
+        </div>
+        <div class="modal-footer bg-light p-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm btn-primary">Salvar Função</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Adicionar Membro -->
+<div class="modal fade" id="modalAdicionarMembro" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h6 class="modal-title fw-bold"><i class="bi bi-person-plus me-1"></i> Adicionar Voluntário a {{ equipe.nome }}</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{{ url_for('escala.equipe_adicionar_membro', id=equipe.id) }}">
+        <div class="modal-body p-3">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Membro da Igreja <span class="text-danger">*</span></label>
+            <select name="membro_id" class="form-select" required>
+              <option value="">-- Selecione o Membro --</option>
+              {% for m in form_membro.membro_id.choices %}
+                <option value="{{ m[0] }}">{{ m[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Função Principal na Equipe</label>
+            <select name="funcao_padrao_id" class="form-select">
+              <option value="0">-- Nenhuma / Função Geral --</option>
+              {% for f in equipe.funcoes %}
+                <option value="{{ f.id }}">{{ f.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer bg-light p-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm btn-primary">Vincular à Equipe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Editar Equipe -->
+<div class="modal fade" id="modalEditarEquipe" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-1"></i> Editar Equipe</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{{ url_for('escala.detalhes_equipe', id=equipe.id) }}">
+        <div class="modal-body p-4">
+          {{ form_editar.hidden_tag() }}
+          <input type="hidden" name="editar_equipe" value="1">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nome da Equipe</label>
+            {{ form_editar.nome(class="form-control") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Líder Responsável</label>
+            {{ form_editar.lider_id(class="form-select") }}
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold">Cor</label>
+              {{ form_editar.cor(class="form-control", type="color") }}
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Ícone Bootstrap</label>
+              {{ form_editar.icone(class="form-control") }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Descrição do Ministério / Atribuições</label>
+            <input type="hidden" name="descricao" id="editDescricao_input" value="{{ form_editar.descricao.data or '' }}">
+            <div class="sigi-editor-wrapper" id="editDescricaoEditorWrapper">
+              <div id="editDescricaoEditorContainer">{{ (form_editar.descricao.data or '') | safe }}</div>
+              <div class="sigi-editor-footer">
+                <span id="editDescricaoCharCount">0 caracteres</span>
+                <span id="editDescricaoWordCount">0 palavras</span>
+              </div>
+            </div>
+            <div class="form-text small text-muted mt-1">
+              <i class="bi bi-info-circle me-1"></i> Descreva os objetivos, atribuições e escopo de atuação do ministério.
+            </div>
+          </div>
+          <div class="form-check form-switch">
+            {{ form_editar.ativo(class="form-check-input") }}
+            <label class="form-check-label fw-semibold">Equipe Ativa</label>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary px-4">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  if (typeof initSigiEditor === "function") {
+    initSigiEditor({
+      editorId: 'editDescricaoEditorContainer',
+      inputId: 'editDescricao_input',
+      charCountId: 'editDescricaoCharCount',
+      wordCountId: 'editDescricaoWordCount',
+      placeholder: 'Descreva os objetivos, atribuições e escopo de atuação do ministério...',
+      minHeight: 140
+    });
+  }
+});
+</script>
+{% endblock %}
